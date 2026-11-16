@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "priority": 2,
+    "action": {
+      "type": "redirect",
+      "redirect": {
+        "transform": {
+          "queryTransform": { "removeParams": ["deviceAdInsertionTypeOverride"] }
+        }
+      }
+    },
+    "condition": {
+      "urlFilter": "/GetPlaybackResources?*deviceAdInsertionTypeOverride=",
+      "resourceTypes": ["xmlhttprequest"],
+      "initiatorDomains": ["primevideo.com", "amazon.in", "amazon.com", "amazon.co.uk", "amazon.de", "amazon.co.jp"]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": { "regexSubstitution": "\\1\\2" }
+    },
+    "condition": {
+      "regexFilter": "^(.*/GetPlaybackResources\\?.*)%2CCuepointPlaylist(.*)$",
+      "resourceTypes": ["xmlhttprequest"],
+      "initiatorDomains": ["primevideo.com", "amazon.in", "amazon.com", "amazon.co.uk", "amazon.de", "amazon.co.jp"]
+    }
+  }
+]

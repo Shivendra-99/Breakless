@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Mock Prime Video player</title></head>
+<body style="margin:0;background:#000">
+  <div id="dv-web-player">
+    <div class="dv-player-fullscreen" style="position:relative;width:640px;height:360px">
+      <video id="v" src="/video.webm" autoplay playsinline style="width:640px;height:360px"></video>
+      <div id="overlay" style="position:absolute;top:8px;left:8px;color:#fff;font:14px sans-serif"></div>
+    </div>
+  </div>
+  <script>
+    const fmt = (s) => { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+    window.T = {
+      skipClicked: false,
+      state() { const v = document.getElementById('v'); return { t: v.currentTime, muted: v.muted, rate: v.playbackRate, paused: v.paused }; },
+      // Simulates an ad break of `len` seconds of video time, ending when the video passes it.
+      startAd(len, opts = {}) {
+        const v = document.getElementById('v');
+        const start = v.currentTime, end = start + len;
+        const ov = document.getElementById('overlay');
+        const el = document.createElement(opts.tag || 'div');
+        if (!opts.noClass) el.className = 'atvwebplayersdk-ad-timer-remaining-time';
+        if (opts.aria) el.setAttribute('aria-label', 'Playing ad');
+        ov.appendChild(el);
+        let btn = null;
+        if (opts.skipButton) {
+          btn = document.createElement('button');
+          btn.className = 'atvwebplayersdk-skip-ad-button';
+          btn.textContent = 'Skip';
+          btn.onclick = () => { T.skipClicked = true; };
+          ov.appendChild(btn);
+        }
+        // blockSeek: the player snaps back if something jumps forward during the ad.
+        let lastGood = start;
+        let seeked = false;
+        const onTime = () => { if (!T.ad.done && v.currentTime - lastGood < 3) lastGood = v.currentTime; };
+        const onSeeking = () => {
+          if (T.ad.done) return;
+          seeked = true;
+          if (opts.blockSeek && v.currentTime - lastGood > 3) v.currentTime = lastGood;
+        };
+        v.addEventListener('timeupdate', onTime);
+        v.addEventListener('seeking', onSeeking);
+        let frozenText = null;
+        const prefix = opts.prefix ?? 'Ad ';
+        const text = (rem) => (opts.noTime ? 'Ad' : prefix + fmt(rem));
+        el.textContent = text(len);
+        T.ad = { start, end, done: false, endedAtWall: 0 };
+        T.seekCount = 0; v.addEventListener('seeking', () => { if (!T.ad.done) T.seekCount++; });
+        const iv = setInterval(() => {
+          const rem = end - v.currentTime;
+          if (rem <= 0) {
+            clearInterval(iv); el.remove(); btn && btn.remove();
+            v.removeEventListener('timeupdate', onTime); v.removeEventListener('seeking', onSeeking);
+            T.ad.done = true; T.ad.endedAtWall = performance.now(); T.ad.endedAtVideo = v.currentTime;
+          } else if (opts.freezeAfterSeek && seeked) {
+            if (frozenText == null) frozenText = el.textContent; // countdown stops updating
+          } else el.textContent = text(rem);
+        }, 50);
+        return { start, end };
+      },
+    };
+  </script>
+</body>
+</html>

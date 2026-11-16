@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Breakless</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header class="top">
+    <img src="../icons/icon48.png" alt="" class="logo" width="28" height="28" />
+    <div class="brand">
+      <h1>Breakless</h1>
+      <p class="tag">Movies &amp; shows without ad breaks</p>
+    </div>
+  </header>
+
+  <section class="status" id="status" data-state="idle">
+    <span class="dot" aria-hidden="true"></span>
+    <span id="statusText">Open Prime Video or JioHotstar</span>
+  </section>
+
+  <section class="stat">
+    <span class="num" id="skipped">0</span>
+    <span class="lbl">ad breaks handled</span>
+  </section>
+
+  <section class="list">
+    <label class="row">
+      <span class="txt">
+        <span class="name">Prime Video</span>
+        <span class="sub">Skip ads automatically</span>
+      </span>
+      <input type="checkbox" class="sw" id="primeEnabled" />
+    </label>
+    <label class="row">
+      <span class="txt">
+        <span class="name">JioHotstar</span>
+        <span class="sub">Skip ads in movies &amp; shows</span>
+      </span>
+      <input type="checkbox" class="sw" id="hotstarEnabled" />
+    </label>
+    <label class="row adv">
+      <span class="txt">
+        <span class="name">Remove Prime ads before they load <em class="beta">Beta</em></span>
+        <span class="sub">Stronger. If subtitles drift or a video won't play, turn this off.</span>
+      </span>
+      <input type="checkbox" class="sw" id="primePreload" />
+    </label>
+  </section>
+
+  <footer class="foot">
+    <span>Changes apply right away. Reload a video that is already playing.</span>
+    <span class="muted">Live sports ads are muted, not skipped.</span>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

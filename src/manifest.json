@@ -1,0 +1,82 @@
+{
+  "manifest_version": 3,
+  "name": "Breakless",
+  "short_name": "Breakless",
+  "version": "0.2.0",
+  "description": "Watch movies and shows without ad breaks. Skips and removes ads automatically. Works with Prime Video and JioHotstar.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Breakless",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["storage", "declarativeNetRequest"],
+  "host_permissions": [
+    "*://*.primevideo.com/*",
+    "*://*.amazon.in/*",
+    "*://*.amazon.com/*",
+    "*://*.amazon.co.uk/*",
+    "*://*.amazon.de/*",
+    "*://*.amazon.co.jp/*",
+    "*://*.amazonvideo.com/*",
+    "*://*.aiv-delivery.net/*",
+    "*://*.hotstar.com/*",
+    "*://*.jiohotstar.com/*"
+  ],
+  "declarative_net_request": {
+    "rule_resources": [
+      { "id": "prime_basic", "enabled": true, "path": "rules/prime_basic.json" },
+      { "id": "prime_preload", "enabled": false, "path": "rules/prime_preload.json" },
+      { "id": "hotstar_basic", "enabled": true, "path": "rules/hotstar_basic.json" }
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.primevideo.com/*",
+        "*://*.amazon.in/*",
+        "*://*.amazon.com/*",
+        "*://*.amazon.co.uk/*",
+        "*://*.amazon.de/*",
+        "*://*.amazon.co.jp/*"
+      ],
+      "js": ["content/prime-main.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "*://*.primevideo.com/*",
+        "*://*.amazon.in/*",
+        "*://*.amazon.com/*",
+        "*://*.amazon.co.uk/*",
+        "*://*.amazon.de/*",
+        "*://*.amazon.co.jp/*"
+      ],
+      "js": ["content/shared.js", "content/prime.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["*://*.hotstar.com/*", "*://*.jiohotstar.com/*"],
+      "js": ["content/hotstar-main.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["*://*.hotstar.com/*", "*://*.jiohotstar.com/*"],
+      "js": ["content/shared.js", "content/hotstar.js"],
+      "run_at": "document_start"
+    }
+  ]
+}

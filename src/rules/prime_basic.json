@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "||amazon.dev/getVideoAds",
+      "initiatorDomains": ["primevideo.com", "amazon.in", "amazon.com", "amazon.co.uk", "amazon.de", "amazon.co.jp"]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "||amazon.dev/getAds",
+      "initiatorDomains": ["primevideo.com", "amazon.in", "amazon.com", "amazon.co.uk", "amazon.de", "amazon.co.jp"]
+    }
+  },
+  {
+    "id": 3,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "||s3-iad-ww.cf.videorolls.row.aiv-cdn.net^",
+      "initiatorDomains": ["primevideo.com", "amazon.in", "amazon.com", "amazon.co.uk", "amazon.de", "amazon.co.jp"]
+    }
+  }
+]

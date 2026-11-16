@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Mock Amazon product page</title></head>
+<body>
+  <h1>Some product</h1>
+  <a href="#" aria-label="Advertisement">Advertisement</a>
+  <span>Ad 0:20</span>
+  <video id="v" src="/video.webm" autoplay playsinline style="width:480px;height:270px"></video>
+  <script>
+    window.T = { state() { const v = document.getElementById('v'); return { t: v.currentTime, muted: v.muted, rate: v.playbackRate }; } };
+  </script>
+</body>
+</html>

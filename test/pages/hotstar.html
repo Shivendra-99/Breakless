@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Mock JioHotstar player</title></head>
+<body style="margin:0;background:#000;color:#fff">
+  <div id="player" style="position:relative;width:640px;height:360px">
+    <div class="w1"><div class="w2"><video id="main" src="/video.webm" autoplay playsinline style="width:640px;height:360px"></video></div></div>
+  </div>
+  <div data-testid="bbtype-video" id="bb" style="width:300px;height:50px;background:#333">Billboard ad</div>
+  <script>
+    customElements.define('ad-badge-overlay', class extends HTMLElement {
+      constructor() {
+        super();
+        const r = this.attachShadow({ mode: 'open' });
+        r.innerHTML = '<div class="ad-badge-overlay__content" style="padding:4px;background:#fc0;color:#000">Ad <span class="ad-badge-overlay__content--time-display"></span></div>';
+      }
+    });
+    const fmt = (s) => { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+    window.T = {
+      state() { const v = document.getElementById('main'); return { t: v.currentTime, muted: v.muted, rate: v.playbackRate }; },
+      billboardHidden() { return getComputedStyle(document.getElementById('bb')).display === 'none'; },
+      startBadgeAd(len) {
+        const v = document.getElementById('main');
+        const start = v.currentTime, end = start + len;
+        const b = document.createElement('ad-badge-overlay');
+        b.style.cssText = 'position:absolute;top:8px;left:8px;display:block';
+        document.getElementById('player').appendChild(b);
+        const td = b.shadowRoot.querySelector('.ad-badge-overlay__content--time-display');
+        td.textContent = fmt(len);
+        T.ad = { start, end, done: false };
+        const iv = setInterval(() => {
+          const rem = end - v.currentTime;
+          if (rem <= 0) { clearInterval(iv); b.remove(); T.ad.done = true; T.ad.endedAtVideo = v.currentTime; }
+          else td.textContent = fmt(rem);
+        }, 50);
+        return { start, end };
+      },
+      startAdVideo() {
+        const c = document.createElement('div');
+        c.id = 'ad-video-container';
+        c.innerHTML = '<video src="/video.webm?ad=1" autoplay playsinline style="width:320px;height:180px"></video>';
+        document.body.appendChild(c);
+        T.adVideo = c.querySelector('video');
+        return true;
+      },
+      adVideoState() { const v = T.adVideo; return { t: v.currentTime, d: v.duration, muted: v.muted }; },
+    };
+  </script>
+</body>
+</html>

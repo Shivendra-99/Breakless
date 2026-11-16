@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": { "urlFilter": "||videoads.hotstar.com^" }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": { "urlFilter": "||hesads.akamaized.net^" }
+  },
+  {
+    "id": 3,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": { "urlFilter": "||hotstar.com^*/preroll" }
+  },
+  {
+    "id": 4,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": { "urlFilter": "||hotstar.com^*/midroll" }
+  },
+  {
+    "id": 5,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": { "urlFilter": "||jiohotstar.com^*/preroll" }
+  },
+  {
+    "id": 6,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": { "urlFilter": "||jiohotstar.com^*/midroll" }
+  },
+  {
+    "id": 7,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "||pubads.g.doubleclick.net/gampad/",
+      "initiatorDomains": ["hotstar.com", "jiohotstar.com"]
+    }
+  },
+  {
+    "id": 8,
+    "priority": 1,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "||securepubads.g.doubleclick.net/gampad/",
+      "initiatorDomains": ["hotstar.com", "jiohotstar.com"]
+    }
+  }
+]

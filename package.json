@@ -1,0 +1,15 @@
+{
+  "name": "breakless",
+  "version": "0.2.0",
+  "description": "Skips and removes ads in movies and shows on Prime Video and JioHotstar (browser extension)",
+  "scripts": {
+    "build": "node build.js",
+    "test": "node build.js && node test/run.js"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "puppeteer-core": "^24.43.1"
+  },
+  "private": true
+}
