@@ -6,14 +6,16 @@ Works in Chrome, Edge, Brave and Opera (one build), and in Firefox 140+, includi
 
 ![Breakless skipping an ad](store-assets/screenshot-1-skipping-1280x800.png)
 
-## Download
+## Install
+
+**Microsoft Edge:** one click from the store: **[Get Breakless on Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/aokengnfpamoadclgmgcfjpodmcdcmkd)**
+
+Chrome Web Store and Firefox Add-ons versions are on the way. Until then, use the zip for your browser and follow the steps under "Install it yourself" below.
 
 | Browser | File |
 |---|---|
-| Chrome, Edge, Brave, Opera | [release/breakless-chrome-edge-v0.2.0.zip](release/breakless-chrome-edge-v0.2.0.zip) |
+| Chrome, Brave, Opera | [release/breakless-chrome-edge-v0.2.0.zip](release/breakless-chrome-edge-v0.2.0.zip) |
 | Firefox 140+ | [release/breakless-firefox-v0.2.0.zip](release/breakless-firefox-v0.2.0.zip) |
-
-Store versions are on the way. Until then, install from the zip as described below.
 
 ## What it does
 
@@ -55,7 +57,7 @@ They can only install it with one click from a store:
 | Store | Cost | Notes |
 |---|---|---|
 | Chrome Web Store | One-time US$5 developer fee | Covers Chrome and Brave users. Review usually takes a few days. |
-| Microsoft Edge Add-ons | Free | Upload the same Chrome zip. |
+| Microsoft Edge Add-ons | Free | **Live:** [Breakless on Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/aokengnfpamoadclgmgcfjpodmcdcmkd) |
 | Firefox Add-ons (AMO) | Free | Upload the Firefox zip. Also reaches Firefox for Android. |
 
 **Store listing tips**
