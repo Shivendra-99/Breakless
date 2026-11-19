@@ -72,7 +72,7 @@ const shots = {
     <div style="position:absolute;left:72px;top:70px;width:520px">
       <div class="brand"><img src="${icon}"><b>Breakless</b></div>
       <h1 style="margin-top:56px">One switch<br>per site.</h1>
-      <p class="lead" style="margin-top:22px">Turn sites on or off, see how many ad breaks were handled, and switch YouTube on when you want it.</p>
+      <p class="lead" style="margin-top:22px">Everything is on from the start. Turn a site off if you like, and see how many ad breaks were handled.</p>
       <p class="lead" style="margin-top:22px;font-size:18px;color:#8e98a6">Settings stay in your browser. Nothing is sent anywhere.</p>
     </div>
     <img src="${popup}" style="position:absolute;left:760px;top:60px;width:340px;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.1)">`],

@@ -26,6 +26,7 @@ h1 { margin: 0 0 4px; font-size: 26px; letter-spacing: -.2px; }
 }
 .card.done { border-color: rgba(45,212,167,.4); }
 .head { display: flex; gap: 14px; }
+.card:not(.done) .step { background: var(--warn); color: #2b1d02; }
 .step {
   flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
   background: #262b35; font-weight: 700; font-size: 14px;
@@ -33,7 +34,6 @@ h1 { margin: 0 0 4px; font-size: 26px; letter-spacing: -.2px; }
 .card.done .step { background: var(--accent); color: var(--accent-ink); }
 h2 { margin: 2px 0 4px; font-size: 17px; }
 .card p { margin: 0; color: var(--sub); font-size: 14px; }
-.card p.ok { color: var(--accent); margin-top: 12px; font-weight: 600; }
 .new {
   font-style: normal; font-size: 11px; font-weight: 700; text-transform: uppercase;
   color: var(--accent); border: 1px solid currentColor; border-radius: 4px; padding: 0 5px;
@@ -42,6 +42,7 @@ h2 { margin: 2px 0 4px; font-size: 17px; }
 
 .checks { list-style: none; margin: 14px 0 0 42px; padding: 0; display: flex; gap: 18px; flex-wrap: wrap; }
 .checks li { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.checks .new { margin-left: 0; }
 .mark { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--warn); position: relative; }
 .checks li.on .mark { border-color: var(--accent); background: var(--accent); }
 .checks li.on .mark::after {
@@ -56,7 +57,7 @@ h2 { margin: 2px 0 4px; font-size: 17px; }
 }
 .btn:hover { filter: brightness(1.08); }
 .btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
-.card p.ok { margin-left: 42px; }
+.card p.warn { margin: 14px 0 0 42px; color: var(--warn); }
 
 .plain h2 { margin-top: 0; }
 .notes { margin: 6px 0 0; padding-left: 18px; color: var(--sub); font-size: 14px; }

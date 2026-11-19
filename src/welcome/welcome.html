@@ -13,43 +13,35 @@
       <img src="../icons/icon128.png" alt="" width="64" height="64" />
       <div>
         <h1 id="title">Breakless is installed</h1>
-        <p class="lead" id="lead">Movies, shows and videos without ad breaks. Two quick checks and you're set.</p>
+        <p class="lead" id="lead">Movies, shows and videos without ad breaks, on Prime Video, JioHotstar and YouTube.</p>
       </div>
     </header>
 
     <section class="card" id="sitesCard">
       <div class="head">
-        <span class="step">1</span>
+        <span class="step" id="stepMark">✓</span>
         <div>
-          <h2>Let Breakless run on your streaming sites</h2>
-          <p>Some browsers, Microsoft Edge among them, install extensions with site access switched off. Breakless can't skip ads on a site it isn't allowed on.</p>
+          <h2>Breakless is on</h2>
+          <p>Play a movie, show or video and ads are skipped for you. Nothing to set up.</p>
         </div>
       </div>
       <ul class="checks">
         <li data-svc="prime"><span class="mark"></span>Prime Video</li>
         <li data-svc="hotstar"><span class="mark"></span>JioHotstar</li>
+        <li data-svc="youtube"><span class="mark"></span>YouTube <em class="new">New</em></li>
       </ul>
-      <button type="button" class="btn" id="allowSites" hidden>Allow access</button>
-      <p class="ok" id="sitesOk" hidden>All set. Breakless can work on Prime Video and JioHotstar.</p>
-    </section>
-
-    <section class="card" id="ytCard">
-      <div class="head">
-        <span class="step">2</span>
-        <div>
-          <h2>YouTube <em class="new">New</em></h2>
-          <p>Skips YouTube video ads (clicks Skip the moment it's allowed, or mutes the ad and jumps to its end) and hides ads in the feed, sidebar and search. It's optional: Breakless only runs on YouTube after you switch it on here.</p>
-        </div>
+      <div id="needAccess" hidden>
+        <p class="warn">Your browser installed Breakless with some sites switched off (Microsoft Edge does this). It can't skip ads on a site it isn't allowed on.</p>
+        <button type="button" class="btn" id="allowSites">Allow access</button>
       </div>
-      <button type="button" class="btn" id="ytOn">Turn on YouTube</button>
-      <p class="ok" id="ytOk" hidden>YouTube is on. Reload any YouTube tab that's already open.</p>
     </section>
 
     <section class="card plain">
       <h2>Good to know</h2>
       <ul class="notes">
-        <li><b>Pin it:</b> click the puzzle-piece icon next to the address bar and pin Breakless to see what it's doing.</li>
-        <li><b>Prime Video</b> ads are now removed before they load, on by default. If subtitles drift or a title won't play, switch "Remove Prime ads before they load" off in the Breakless menu.</li>
+        <li><b>Pin it:</b> click the puzzle-piece icon next to the address bar and pin Breakless to see what it's doing. Reload any video tab that was already open.</li>
+        <li><b>YouTube:</b> Breakless clicks Skip the moment it appears, otherwise mutes the ad and jumps to its end, and hides ads in the feed, search and sidebar. Don't want it on YouTube? Switch YouTube off in the Breakless menu.</li>
+        <li><b>Prime Video</b> ads are removed before they load. If subtitles drift or a title won't play, switch "Remove Prime ads before they load" off in the Breakless menu.</li>
         <li><b>Live sports</b> ads can't be skipped: Breakless mutes them until the match is back.</li>
       </ul>
     </section>

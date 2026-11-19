@@ -20,7 +20,7 @@ This data never leaves your browser and is deleted when you remove the extension
 
 ## Website access
 
-Breakless only runs on the websites it supports: Prime Video and JioHotstar pages, Prime Video pages on Amazon domains, and youtube.com if you switch YouTube on and allow it. There it reads the video player to detect ad breaks, hides ad slots and blocks known ad requests. It does not read or change anything else. You can switch YouTube off, or remove its access, at any time.
+Breakless only runs on the websites it supports: Prime Video and JioHotstar pages, Prime Video pages on Amazon domains, and youtube.com. There it reads the video player to detect ad breaks, hides ad slots and blocks known ad requests. It does not read or change anything else. You can switch any of these sites off in the Breakless menu at any time.
 
 ## Contact
 

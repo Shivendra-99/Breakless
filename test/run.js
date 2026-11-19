@@ -3,21 +3,7 @@ const path = require('path');
 const puppeteer = require('puppeteer-core');
 const server = require('./server');
 
-const fs = require('fs');
-
-// Test copy of the Chrome build. YouTube is an optional permission that a real user grants
-// with a click; a headless browser can't click the prompt, so the test copy asks for it up
-// front. Everything else is the shipped build, byte for byte.
-const BUILD = path.resolve(__dirname, '..', 'dist', 'chrome');
-const EXT = path.resolve(__dirname, '..', 'dist', 'chrome-test');
-fs.rmSync(EXT, { recursive: true, force: true });
-fs.cpSync(BUILD, EXT, { recursive: true });
-{
-  const mf = JSON.parse(fs.readFileSync(path.join(EXT, 'manifest.json'), 'utf8'));
-  mf.host_permissions.push(...mf.optional_host_permissions);
-  delete mf.optional_host_permissions;
-  fs.writeFileSync(path.join(EXT, 'manifest.json'), JSON.stringify(mf, null, 2));
-}
+const EXT = path.resolve(__dirname, '..', 'dist', 'chrome');
 const results = [];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 function check(name, ok, detail = '') {
@@ -83,11 +69,11 @@ const fetchStatus = (page, url) =>
       await wp.setViewport({ width: 900, height: 900, deviceScaleFactor: 1 });
       await sleep(500);
       const w = await wp.evaluate(() => ({
-        sitesOk: !document.getElementById('sitesOk').hidden,
-        allowHidden: document.getElementById('allowSites').hidden,
-        ytButton: !document.getElementById('ytOn').hidden,
+        on: [...document.querySelectorAll('.checks li.on')].map((li) => li.dataset.svc),
+        warning: !document.getElementById('needAccess').hidden,
       }));
-      check('welcome tab: sites already allowed, YouTube offered', w.sitesOk && w.allowHidden && w.ytButton, JSON.stringify(w));
+      check('welcome tab: Prime Video, JioHotstar and YouTube all ready, nothing to do',
+        JSON.stringify(w.on) === '["prime","hotstar","youtube"]' && !w.warning, JSON.stringify(w));
       await wp.screenshot({ path: path.join(__dirname, 'welcome.png'), fullPage: true });
       await wp.close();
     }
@@ -294,25 +280,15 @@ const fetchStatus = (page, url) =>
     await setSettings({ hotstarEnabled: true });
 
 
-    // ---- YouTube: nothing runs until the user switches it on -----------------
+    // ---- YouTube: on by default, nothing to set up ---------------------------
     const ytScripts = () => sw.evaluate(() => chrome.scripting.getRegisteredContentScripts().then((l) => l.map((x) => `${x.id}:${x.world || 'ISOLATED'}`)));
-    check('YouTube: off by default, no scripts registered', (await ytScripts()).length === 0, JSON.stringify(await ytScripts()));
-    await page.goto('https://www.youtube.com/watch?v=test', { waitUntil: 'load' });
-    await sleep(1000);
-    let yt = await page.evaluate(() => ({ adSlot: T.shown('adItem'), masthead: T.shown('masthead-ad'), data: 'adPlacements' in ytInitialPlayerResponse }));
-    check('YouTube off: page left alone (ad slots and player data untouched)', yt.adSlot && yt.masthead && yt.data, JSON.stringify(yt));
-
-    await setSettings({ youtubeEnabled: true });
-    await sleep(1000);
-    const regd = await ytScripts();
-    check('YouTube switched on: skipper registered, YouTube\'s own JavaScript left alone (beta off)',
-      JSON.stringify(regd) === '["bl-yt:ISOLATED"]', JSON.stringify(regd));
+    check('YouTube: YouTube\'s own JavaScript left alone by default (no page-context script)', (await ytScripts()).length === 0, JSON.stringify(await ytScripts()));
     await page.goto('https://www.youtube.com/watch?v=test', { waitUntil: 'load' });
     await waitFor(page, () => T.state().t > 1.5);
-    yt = await page.evaluate(() => ({
+    let yt = await page.evaluate(() => ({
       adItem: T.shown('adItem'), masthead: T.shown('masthead-ad'), playerAds: T.shown('player-ads'), normal: T.shown('normalItem'),
     }));
-    check('YouTube: feed, masthead and companion ad slots hidden, normal videos kept',
+    check('YouTube (no setup): feed, masthead and companion ad slots hidden, normal videos kept',
       !yt.adItem && !yt.masthead && !yt.playerAds && yt.normal, JSON.stringify(yt));
     yt = await page.evaluate(() => ({ data: 'adPlacements' in ytInitialPlayerResponse }));
     check('YouTube (pre-load beta off): player data untouched', yt.data);
@@ -370,7 +346,7 @@ const fetchStatus = (page, url) =>
     await setSettings({ youtubePreload: true });
     await sleep(800);
     const regBeta = await ytScripts();
-    check('YouTube beta on: page-context script registered too', regBeta.includes('bl-yt-main:MAIN') && regBeta.includes('bl-yt:ISOLATED'), JSON.stringify(regBeta));
+    check('YouTube beta on: page-context script registered', JSON.stringify(regBeta) === '["bl-yt-main:MAIN"]', JSON.stringify(regBeta));
     await page.goto('https://www.youtube.com/watch?v=test', { waitUntil: 'load' });
     await sleep(800);
     const ytData = await page.evaluate(async () => {
@@ -388,16 +364,18 @@ const fetchStatus = (page, url) =>
     check('YouTube (pre-load beta): non-player data never touched', ytData.other, JSON.stringify(ytData));
     await setSettings({ youtubePreload: false });
     await sleep(800);
-    check('YouTube beta off again: page-context script removed', JSON.stringify(await ytScripts()) === '["bl-yt:ISOLATED"]', JSON.stringify(await ytScripts()));
+    check('YouTube beta off again: page-context script removed', (await ytScripts()).length === 0, JSON.stringify(await ytScripts()));
 
-    // Switching YouTube off removes everything.
+    // Switching YouTube off really turns it off.
     await setSettings({ youtubeEnabled: false });
-    await sleep(1000);
-    const unreg = await ytScripts();
-    await page.goto('https://www.youtube.com/watch?v=test', { waitUntil: 'load' });
     await sleep(800);
-    yt = await page.evaluate(() => ({ adSlot: T.shown('adItem') }));
-    check('YouTube switched off: scripts removed, page back to normal', unreg.length === 0 && yt.adSlot, JSON.stringify({ unreg, ...yt }));
+    await page.goto('https://www.youtube.com/watch?v=test', { waitUntil: 'load' });
+    await waitFor(page, () => T.state().t > 1.5);
+    await page.evaluate(() => T.startAd());
+    await sleep(1500);
+    yt = await page.evaluate(() => ({ adSlot: T.shown('adItem'), ...T.state(), seeks: T.ad.seeks }));
+    check('YouTube switched off: ad slots shown, ad plays untouched (not muted, not jumped)',
+      yt.adSlot && yt.ad && !yt.muted && yt.rate === 1 && yt.seeks === 0, JSON.stringify(yt));
     await setSettings({ youtubeEnabled: true });
     await sleep(600);
 

@@ -36,9 +36,7 @@
     "*://*.amazonvideo.com/*",
     "*://*.aiv-delivery.net/*",
     "*://*.hotstar.com/*",
-    "*://*.jiohotstar.com/*"
-  ],
-  "optional_host_permissions": [
+    "*://*.jiohotstar.com/*",
     "*://*.youtube.com/*"
   ],
   "declarative_net_request": {
@@ -110,6 +108,16 @@
       "js": [
         "content/shared.js",
         "content/hotstar.js"
+      ],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "*://*.youtube.com/*"
+      ],
+      "js": [
+        "content/shared.js",
+        "content/youtube.js"
       ],
       "run_at": "document_start"
     }

@@ -1,5 +1,5 @@
-// Breakless for YouTube (isolated world). Registered only after the user switches YouTube on
-// and allows youtube.com.
+// Breakless for YouTube (isolated world). On by default, like Prime Video and JioHotstar;
+// does nothing while the YouTube switch in the popup is off.
 //  * In the player: while YouTube marks an ad as playing (`.ad-showing`), clicks "Skip" as soon
 //    as it appears, otherwise mutes the ad and jumps to its end (muted 16x if the jump is refused).
 //    Each ad of a multi-ad break is handled in turn.

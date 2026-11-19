@@ -1,17 +1,17 @@
 const DEFAULTS = {
   primeEnabled: true, hotstarEnabled: true, primePreload: true,
-  youtubeEnabled: false, youtubePreload: false,
+  youtubeEnabled: true, youtubePreload: false,
 };
 const KEYS = Object.keys(DEFAULTS);
 const NAMES = { prime: 'Prime Video', hotstar: 'JioHotstar', youtube: 'YouTube' };
 
-// Sites each service needs. Prime and JioHotstar are granted at install, but a browser can
-// install an extension with site access switched off (Edge does this), so they are checked too.
+// Sites each service needs. All are granted at install, but a browser can install an
+// extension with site access switched off (Edge does this), so they are checked.
 const hosts = chrome.runtime.getManifest().host_permissions;
 const ORIGINS = {
-  prime: hosts.filter((h) => !/hotstar/.test(h)),
+  prime: hosts.filter((h) => !/hotstar|youtube/.test(h)),
   hotstar: hosts.filter((h) => /hotstar/.test(h)),
-  youtube: ['*://*.youtube.com/*'],
+  youtube: hosts.filter((h) => /youtube/.test(h)),
 };
 // What has to be allowed for a service to work at all (the amazon.* stores only matter for
 // Prime played inside amazon.in/com/...).
@@ -58,9 +58,6 @@ async function render() {
     const list = missing.map((m) => NAMES[m]).join(missing.length > 2 ? ', ' : ' and ');
     $('accessText').textContent = `Breakless isn't allowed on ${list} yet, so it can't skip ads there.`;
   }
-  $('youtubeSub').textContent = s.youtubeEnabled && !ok.youtube
-    ? 'Needs your OK to run on YouTube'
-    : 'Skip video ads, hide ad slots';
 
   let tab = null;
   try {
@@ -84,9 +81,7 @@ async function render() {
   }
 }
 
-// permissions.request must run straight from the click. The setting is saved first: some
-// browsers close the popup while their permission prompt is open, and the background
-// script finishes the job when access is granted.
+// permissions.request must run straight from the click.
 function requestAccess(services) {
   const origins = [...new Set(services.flatMap((svc) => ORIGINS[svc]))];
   return chrome.permissions.request({ origins }).catch(() => false).finally(render);
@@ -96,7 +91,6 @@ for (const k of KEYS) {
   $(k).addEventListener('change', (e) => {
     const value = e.target.checked;
     chrome.storage.local.set({ [k]: value }).then(render);
-    if (k === 'youtubeEnabled' && value) requestAccess(['youtube']);
   });
 }
 

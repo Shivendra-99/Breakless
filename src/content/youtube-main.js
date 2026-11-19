@@ -1,6 +1,6 @@
 // Breakless for YouTube (page context / MAIN world, document_start).
-// Registered only while YouTube is switched on, youtube.com is allowed and the
-// "Remove YouTube ads before they load" beta is on. It strips the ad schedule
+// Registered only while YouTube is switched on and the "Remove YouTube ads before they
+// load" beta is on. It strips the ad schedule
 // (adPlacements, playerAds, adSlots) from YouTube's player data before the player reads it,
 // the same fields uBlock Origin's YouTube filters remove. Nothing else in the data is touched.
 (() => {
