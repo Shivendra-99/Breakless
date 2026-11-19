@@ -76,6 +76,36 @@ const shots = {
       <p class="lead" style="margin-top:22px;font-size:18px;color:#8e98a6">Settings stay in your browser. Nothing is sent anywhere.</p>
     </div>
     <img src="${popup}" style="position:absolute;left:760px;top:60px;width:340px;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.1)">`],
+  'screenshot-4-videos-1280x800.png': [1280, 800, `
+    <div class="bg"></div>
+    <div style="position:absolute;left:72px;top:70px;width:500px">
+      <div class="brand"><img src="${icon}"><b>Breakless</b></div>
+      <h1 style="margin-top:56px">Videos too.<br>Ads gone before<br>they start.</h1>
+      <p class="lead" style="margin-top:22px">On YouTube, Breakless removes ads before they load, skips any that still start, and hides ad slots in your feed.</p>
+      <div style="margin-top:34px;display:flex;flex-wrap:wrap;gap:10px"><span class="pill">On from install</span><span class="pill">Nothing to set up</span></div>
+    </div>
+    <div style="position:absolute;left:620px;top:120px;width:600px;display:grid;grid-template-columns:1fr 1fr;gap:22px">
+      ${[0,1,2,3].map((i) => i === 1 ? `
+      <div style="position:relative">
+        <div style="height:150px;border-radius:14px;border:2px dashed rgba(45,212,167,.55);background:rgba(45,212,167,.06);display:grid;place-items:center">
+          <span style="display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:linear-gradient(135deg,#12b886,#0e7490);font-weight:700;font-size:17px">${DONE.replace('<svg', '<svg width="18" height="18"')} Ad hidden</span>
+        </div>
+        <div style="height:14px;width:80%;margin-top:14px;border-radius:7px;background:rgba(45,212,167,.12)"></div>
+        <div style="height:12px;width:50%;margin-top:9px;border-radius:6px;background:rgba(45,212,167,.08)"></div>
+      </div>` : `
+      <div>
+        <div style="height:150px;border-radius:14px;background:linear-gradient(${120 + i * 40}deg,#3b4a7a 0%,#7a5a6a 55%,#1d2433 100%);position:relative;overflow:hidden">
+          <div style="position:absolute;left:50%;top:58%;width:160%;height:120%;transform:translateX(-50%);border-radius:50%;background:#141a24"></div>
+          <span style="position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.75);font-size:13px;font-weight:600;padding:2px 6px;border-radius:5px">${['12:04', '', '8:31', '21:47'][i]}</span>
+        </div>
+        <div style="height:14px;width:85%;margin-top:14px;border-radius:7px;background:rgba(255,255,255,.16)"></div>
+        <div style="height:12px;width:55%;margin-top:9px;border-radius:6px;background:rgba(255,255,255,.09)"></div>
+      </div>`).join('')}
+      <div style="grid-column:1 / span 2;position:relative;height:210px;border-radius:16px;overflow:hidden" class="player">
+        <div class="hill"></div><div class="bar"><i style="width:18%"></i></div>
+        <div class="card done" style="font-size:20px;top:22px"><span class="ico">${DONE}</span><span>Ad skipped<small>Breakless</small></span></div>
+      </div>
+    </div>`],
   'small-tile-440x280.png': [440, 280, `
     <div style="position:absolute;inset:0;background:linear-gradient(135deg,#0f766e 0%,#0b3a4a 100%)"></div>
     <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">

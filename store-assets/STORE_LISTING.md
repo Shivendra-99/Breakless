@@ -56,6 +56,7 @@ How to test: open a movie or episode on Prime Video with an ad-supported plan. W
 | screenshot-1-skipping-1280x800.png | 1280×800 | Screenshot |
 | screenshot-2-done-1280x800.png | 1280×800 | Screenshot |
 | screenshot-3-popup-1280x800.png | 1280×800 | Screenshot |
+| screenshot-4-videos-1280x800.png | 1280×800 | Screenshot (YouTube) |
 
 ## What's new in 0.3.0 (for update notes)
 
