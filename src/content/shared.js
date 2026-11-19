@@ -4,7 +4,7 @@
 
   const DEFAULTS = {
     primeEnabled: true, hotstarEnabled: true, primePreload: true,
-    youtubeEnabled: true, youtubePreload: false,
+    youtubeEnabled: true, youtubePreload: true,
   };
   const CFG_EVENT = '__bl_cfg_e1';
   const HELLO_EVENT = '__bl_hello_e1';

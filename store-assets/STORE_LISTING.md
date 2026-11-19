@@ -24,7 +24,7 @@ Works with Prime Video, JioHotstar and YouTube in your browser.
 FEATURES
 • Skips ad breaks in movies and shows automatically
 • Removes Prime Video ads before they even load
-• YouTube: clicks "Skip" the moment it appears, otherwise mutes the ad and jumps to its end; hides ads in the feed, search and sidebar
+• YouTube: removes ads before they load; any that still start are skipped (clicks "Skip" the moment it appears, or mutes the ad and jumps to its end); hides ads in the feed, search and sidebar
 • Clicks the service's own "Skip" button when one appears
 • Blocks known ad requests and hides ad banners
 • One switch per site, plus a counter of ad breaks handled
@@ -41,7 +41,7 @@ Breakless is an independent project and is not affiliated with, endorsed by or s
 
 Breakless runs only on primevideo.com, Prime Video pages on amazon.* domains, hotstar.com / jiohotstar.com, and youtube.com. It contains no remote code, no analytics and makes no network requests of its own. Settings are kept in chrome.storage.local.
 
-YouTube test: play any YouTube video with a pre-roll ad. The ad is muted and skipped within a second, and ad slots in the feed are hidden.
+YouTube test: play any YouTube video that normally shows a pre-roll ad. The ad does not play (or, if one starts, it is muted and skipped within a second), and ad slots in the feed are hidden.
 
 How to test: open a movie or episode on Prime Video with an ad-supported plan. When the ad countdown appears, the extension shows a "Skipping ad" card, jumps past the ad, and restores sound and speed afterwards. Without an ad-supported account, the repository includes an automated end-to-end test with mock player pages (test/run.js, see README) that exercises every feature.
 
@@ -59,7 +59,7 @@ How to test: open a movie or episode on Prime Video with an ad-supported plan. W
 
 ## What's new in 0.3.0 (for update notes)
 
-- New: YouTube. Skips video ads (Skip button, or mute and jump to the end) and hides ad slots. On by default, like Prime Video and JioHotstar.
+- New: YouTube. Removes ads before they load, skips any that still start (Skip button, or mute and jump to the end) and hides ad slots. On by default, like Prime Video and JioHotstar.
 - Prime Video: "Remove ads before they load" is now on for everyone (was beta).
 - The menu now warns when the browser has switched off Breakless's site access (happens on Edge) and offers an Allow button.
 - A welcome tab after install and after this update.
@@ -72,7 +72,7 @@ How to test: open a movie or episode on Prime Video with an ad-supported plan. W
 
 **declarativeNetRequest:** Blocks known ad requests (ad decisions and ad videos) on Prime Video and JioHotstar, using fixed rules bundled with the extension.
 
-**scripting:** Registers one bundled script on youtube.com only while the user has the optional "Remove YouTube ads before they load" mode switched on. No remote code is used.
+**scripting:** Registers one bundled script on youtube.com that removes ad schedules from the video player's data, while the "Remove YouTube ads before they load" setting is on (default). Switching the setting off unregisters it. No remote code is used.
 
 **Host permissions:** Prime Video, JioHotstar and YouTube pages (and Prime Video pages on Amazon domains) to detect and skip ad breaks in the player and hide ad slots.
 

@@ -1,6 +1,6 @@
 const DEFAULTS = {
   primeEnabled: true, hotstarEnabled: true, primePreload: true,
-  youtubeEnabled: true, youtubePreload: false,
+  youtubeEnabled: true, youtubePreload: true,
 };
 const KEYS = Object.keys(DEFAULTS);
 const NAMES = { prime: 'Prime Video', hotstar: 'JioHotstar', youtube: 'YouTube' };

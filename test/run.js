@@ -282,7 +282,7 @@ const fetchStatus = (page, url) =>
 
     // ---- YouTube: on by default, nothing to set up ---------------------------
     const ytScripts = () => sw.evaluate(() => chrome.scripting.getRegisteredContentScripts().then((l) => l.map((x) => `${x.id}:${x.world || 'ISOLATED'}`)));
-    check('YouTube: YouTube\'s own JavaScript left alone by default (no page-context script)', (await ytScripts()).length === 0, JSON.stringify(await ytScripts()));
+    check('YouTube: "remove ads before they load" script registered by default', JSON.stringify(await ytScripts()) === '["bl-yt-main:MAIN"]', JSON.stringify(await ytScripts()));
     await page.goto('https://www.youtube.com/watch?v=test', { waitUntil: 'load' });
     await waitFor(page, () => T.state().t > 1.5);
     let yt = await page.evaluate(() => ({
@@ -291,7 +291,7 @@ const fetchStatus = (page, url) =>
     check('YouTube (no setup): feed, masthead and companion ad slots hidden, normal videos kept',
       !yt.adItem && !yt.masthead && !yt.playerAds && yt.normal, JSON.stringify(yt));
     yt = await page.evaluate(() => ({ data: 'adPlacements' in ytInitialPlayerResponse }));
-    check('YouTube (pre-load beta off): player data untouched', yt.data);
+    check('YouTube (default): ad schedule removed from the page\'s player data', !yt.data);
 
     // One ad, no countdown on screen: jump to the end of the ad clip.
     await sleep(1000);
@@ -342,11 +342,7 @@ const fetchStatus = (page, url) =>
       !ytAfter.muted && ytAfter.rate === 1 && Math.abs(ytAfter.t - yad.resumeAt) < 4,
       `resume ${yad.resumeAt.toFixed(1)}s, now ${ytAfter.t.toFixed(1)}s`);
 
-    // Pre-load removal (beta).
-    await setSettings({ youtubePreload: true });
-    await sleep(800);
-    const regBeta = await ytScripts();
-    check('YouTube beta on: page-context script registered', JSON.stringify(regBeta) === '["bl-yt-main:MAIN"]', JSON.stringify(regBeta));
+    // Removing ads before they load (default).
     await page.goto('https://www.youtube.com/watch?v=test', { waitUntil: 'load' });
     await sleep(800);
     const ytData = await page.evaluate(async () => {
@@ -359,12 +355,19 @@ const fetchStatus = (page, url) =>
         other: 'adPlacements' in other,
       };
     });
-    check('YouTube (pre-load beta): ad schedule removed from page and fetched player data, rest kept',
+    check('YouTube (pre-load): ad schedule removed from page and fetched player data, rest kept',
       ytData.initial.length === 0 && ytData.kept && ytData.next.length === 0 && ytData.nextKept, JSON.stringify(ytData));
-    check('YouTube (pre-load beta): non-player data never touched', ytData.other, JSON.stringify(ytData));
+    check('YouTube (pre-load): non-player data never touched', ytData.other, JSON.stringify(ytData));
     await setSettings({ youtubePreload: false });
     await sleep(800);
-    check('YouTube beta off again: page-context script removed', (await ytScripts()).length === 0, JSON.stringify(await ytScripts()));
+    const regOff = await ytScripts();
+    await page.goto('https://www.youtube.com/watch?v=test', { waitUntil: 'load' });
+    await sleep(800);
+    const untouched = await page.evaluate(() => 'adPlacements' in ytInitialPlayerResponse);
+    check('YouTube pre-load switched off: script removed, YouTube\'s player data untouched', regOff.length === 0 && untouched, JSON.stringify({ regOff, untouched }));
+    await setSettings({ youtubePreload: true });
+    await sleep(800);
+    check('YouTube pre-load back on: script registered again', JSON.stringify(await ytScripts()) === '["bl-yt-main:MAIN"]', JSON.stringify(await ytScripts()));
 
     // Switching YouTube off really turns it off.
     await setSettings({ youtubeEnabled: false });
@@ -390,10 +393,11 @@ const fetchStatus = (page, url) =>
       access: !document.getElementById('access').hidden,
       yt: document.getElementById('youtubeEnabled').checked,
       preload: document.getElementById('primePreload').checked,
+      ytPreload: document.getElementById('youtubePreload').checked,
       beta: [...document.querySelectorAll('.beta')].map((b) => b.closest('.row').querySelector('input').id),
     }));
-    check('Popup: Prime pre-load on and out of Beta, YouTube toggle on, no access warning',
-      !popState.access && popState.yt && popState.preload && JSON.stringify(popState.beta) === '["youtubePreload"]', JSON.stringify(popState));
+    check('Popup: everything on by default, no Beta labels, no access warning',
+      !popState.access && popState.yt && popState.preload && popState.ytPreload && popState.beta.length === 0, JSON.stringify(popState));
     await pop.screenshot({ path: path.join(__dirname, 'popup.png'), clip: { x: 0, y: 0, width: 320, height: (await pop.evaluate(() => document.body.scrollHeight)) } });
 
     // Site access withheld (what Edge did). Chrome won't let a test switch required access off,

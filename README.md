@@ -32,7 +32,7 @@ A Firefox Add-ons version is on the way. Until then, Firefox users can use the z
 | Skips ads on screen | Reads the ad countdown, jumps past the ad (max 90 s per jump; Amazon's player crashes on bigger jumps), clicks Amazon's Skip button. With no countdown it plays the ad muted at 16x. | Ends separately played ad videos; jumps past ads shown with an "Ad" badge countdown | Clicks **Skip** the moment it appears; otherwise mutes the ad and jumps to its end. Each ad of a multi-ad break in turn. |
 | Hides ad slots | – | Ad billboards (`bbtype-video` / `bbtype-image`) | Feed, search, sidebar, masthead and companion ads, in-player overlay ads |
 | Cleans page data | – | Removes the player's `intervention_data` | – |
-| Removes ads before they load | Strips ad Periods from the DASH manifest, ad cue points and pause ads from the playback data, and the ad-insertion request flags. Same rules as uBlock Origin. **On by default** since v0.3.0. | – | **Beta, off by default.** Removes `adPlacements`, `playerAds` and `adSlots` from YouTube's player data, nothing else. |
+| Removes ads before they load | Strips ad Periods from the DASH manifest, ad cue points and pause ads from the playback data, and the ad-insertion request flags. Same rules as uBlock Origin. **On by default** since v0.3.0. | – | Removes `adPlacements`, `playerAds` and `adSlots` from YouTube's player data (the page's first data and every later `/player` response), nothing else. **On by default.** |
 | Default | On | On | On |
 
 While an ad is handled, a large highlighted **"Skipping ad"** card appears at the top of the player, with a progress bar. When the ad is gone it turns into a green **"Ad skipped"** for 1.6 s. The card scales with the player, up to 26 px text in full screen.
@@ -49,7 +49,8 @@ Sound and speed come back as soon as the ad ends. Product videos on Amazon shopp
 - YouTube marks the player with `ad-showing` while an ad plays and plays each ad as its own short clip in the same `<video>`. Breakless clicks Skip when YouTube offers it; until then it mutes the clip and jumps to 0.25 s before its end, so YouTube finishes the ad itself and moves on.
 - It only jumps once the player has actually switched to the ad clip. In the first moment of a break the real video can still be on screen: Breakless only mutes it then, so the video you're watching is never jumped.
 - Nothing is blocked on the network. Blocking YouTube's ad requests is what sets off YouTube's "ad blockers are not allowed" wall; skipping in the player doesn't touch those requests.
-- The skipper is a normal content script, like Prime's and Hotstar's. The page-context script that edits player data is registered (`chrome.scripting.registerContentScripts`) only while the YouTube beta is on, so with the beta off Breakless never touches YouTube's own JavaScript.
+- **Before they load:** YouTube's player data carries the ad schedule (`adPlacements`, `playerAds`, `adSlots`). Breakless removes those three fields before the player reads them, so most ads never start. Anything that still starts is caught by the skipper.
+- The skipper is a normal content script, like Prime's and Hotstar's. The page-context script that edits player data is registered with `chrome.scripting.registerContentScripts`, so switching "Remove YouTube ads before they load" off removes it completely and Breakless no longer touches YouTube's own JavaScript.
 - youtube.com is a site permission granted at install. People updating from 0.2.x are asked once by their browser to approve the new site before the update turns on.
 
 ## Install it yourself (for testing)
@@ -93,7 +94,7 @@ Everything was tested in Chrome against **mock** pages that copy the ad signals 
 ```
 src/
   manifest.json           MV3 manifest (Chrome build; build.js derives the Firefox one)
-  background.js           rule sets on/off, YouTube beta script on/off, welcome tab, 0.2 -> 0.3 migration
+  background.js           rule sets on/off, YouTube page script on/off, welcome tab, 0.2 -> 0.3 migration
   rules/*.json            declarativeNetRequest rules (prime_basic, prime_preload, hotstar_basic)
   content/shared.js       settings, ad controller (jump / mute / 16x / restore), on-player toast
   content/prime.js        Prime ad detection on screen
@@ -101,7 +102,7 @@ src/
   content/hotstar.js      Hotstar ad-video / badge handling, billboard hiding
   content/hotstar-main.js page-context: intervention_data pruning
   content/youtube.js      YouTube skipper (Skip button, mute + jump) and ad-slot hiding
-  content/youtube-main.js page-context: YouTube player-data pruning (beta)
+  content/youtube-main.js page-context: YouTube player-data pruning
   popup/                  toggles, "ad breaks handled" counter, site-access warning
   welcome/                tab shown after install/update: what's on, site-access check
 build.js                  -> dist/chrome, dist/firefox and both zips
@@ -126,7 +127,7 @@ sudo node test/run.js           # needs Chrome; binds port 443; maps all hosts t
 - **Changing selectors.** Amazon A/B-tests the class names, so detection can break after a player update. The text fallback ("Ad 0:20" inside the player) and the 16x fallback reduce this risk but don't remove it.
 - **JioHotstar signals are less certain.** The 2026 web player's ad elements aren't publicly documented. The badge and ad-video signals come from community code; test them on the live site.
 - **Removing Prime ads before they load** can make subtitles drift (seen with uBlock Origin's identical rules). It worked well in real use, so it is on by default since v0.3.0; switch it off in the popup if subtitles drift or a title won't play.
-- **YouTube changes often.** If an ad plays through, check the console for `[Breakless] youtube` lines. If YouTube shows an ad-blocker warning with the pre-load beta on, switch the beta off.
+- **YouTube changes often.** If an ad plays through, check the console for `[Breakless] youtube` lines. If YouTube shows an "ad blockers are not allowed" warning or a video won't play, switch "Remove YouTube ads before they load" off; the skipper alone doesn't edit anything YouTube checks.
 - **Account risk.** Hotstar's terms forbid blocking ads, and one unconfirmed report links an ad blocker to a blocked account. Mention this in your store listing or FAQ.
 
 ## Privacy

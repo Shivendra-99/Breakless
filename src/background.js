@@ -1,13 +1,14 @@
-// Breakless background: keeps the network rule sets and the YouTube beta script in step with
+// Breakless background: keeps the network rule sets and the YouTube page script in step with
 // the user's toggles, migrates settings on update, and opens the welcome tab.
 
 const DEFAULTS = {
   primeEnabled: true, hotstarEnabled: true, primePreload: true,
-  youtubeEnabled: true, youtubePreload: false,
+  youtubeEnabled: true, youtubePreload: true,
 };
 // The YouTube skipper is a normal content script (manifest.json), like Prime's and Hotstar's.
-// Only the page-context script for the "before they load" beta is registered here, and only
-// while that beta is on, so with it off Breakless never touches YouTube's own JavaScript.
+// The page-context script ("Remove YouTube ads before they load", on by default) is registered
+// here instead, so switching that off removes it completely and leaves YouTube's own
+// JavaScript untouched.
 const YT_MAIN = {
   id: 'bl-yt-main', matches: ['*://*.youtube.com/*'], js: ['content/youtube-main.js'],
   runAt: 'document_start', world: 'MAIN', persistAcrossSessions: true,
