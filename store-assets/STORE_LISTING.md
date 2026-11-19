@@ -15,27 +15,28 @@ Watch movies, shows and videos without ad breaks. Skips and removes ads automati
 
 ## Description
 
-Breakless lets you watch movies, shows and videos without sitting through ad breaks.
+Breakless lets you watch movies, shows and videos without sitting through ad breaks. Install it and it just works: nothing to set up.
 
-When an ad starts, Breakless jumps past it automatically, keeps it muted, and brings your show straight back with sound on. A clear on-screen card tells you what's happening. If a jump isn't possible, it fast-forwards the ad silently instead.
+On Prime Video and YouTube, Breakless removes ads before they even load. Any ad that still starts is skipped: Breakless clicks "Skip" the moment it appears, or mutes the ad, jumps past it and brings your show straight back with sound on. A clear on-screen card tells you what's happening.
 
 Works with Prime Video, JioHotstar and YouTube in your browser.
 
 FEATURES
-• Skips ad breaks in movies and shows automatically
-• Removes Prime Video ads before they even load
-• YouTube: removes ads before they load; any that still start are skipped (clicks "Skip" the moment it appears, or mutes the ad and jumps to its end); hides ads in the feed, search and sidebar
-• Clicks the service's own "Skip" button when one appears
-• Blocks known ad requests and hides ad banners
+• Removes Prime Video and YouTube ads before they load
+• Skips ad breaks in movies, shows and videos automatically
+• Clicks the "Skip" button the moment it appears
+• Hides ads in the YouTube feed, search and sidebar, and ad banners on JioHotstar
+• Blocks known ad requests on Prime Video and JioHotstar
 • One switch per site, plus a counter of ad breaks handled
 • No account, no setup, no data collection: settings stay in your browser
 
 GOOD TO KNOW
-• Don't want it on a site? Switch that site off in the Breakless menu.
+• Everything is on from install. Don't want it on a site? Switch that site off in the Breakless menu.
+• If a video won't play or subtitles drift, switch off "Remove ads before they load" for that site in the menu.
 • Live sports ad breaks are muted, not skipped.
 • Streaming sites change their players often. If an ad gets through, please report it on GitHub so it can be fixed quickly.
 
-Breakless is an independent project and is not affiliated with, endorsed by or sponsored by Amazon or JioStar. Product names are used only to describe compatibility.
+Breakless is an independent project and is not affiliated with, endorsed by or sponsored by Amazon, JioStar or Google. Product names are used only to describe compatibility.
 
 ## Notes for certification
 

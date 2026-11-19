@@ -136,4 +136,4 @@ Breakless collects nothing. See [PRIVACY.md](PRIVACY.md).
 
 ---
 
-Breakless is an independent project and is not affiliated with, endorsed by or sponsored by Amazon or JioStar. Product names are used only to describe compatibility.
+Breakless is an independent project and is not affiliated with, endorsed by or sponsored by Amazon, JioStar or Google. Product names are used only to describe compatibility.
