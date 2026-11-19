@@ -4,7 +4,10 @@ A browser extension that skips and removes ads in **movies and shows** on **Prim
 
 Works in Chrome, Edge, Brave and Opera (one build), and in Firefox 140+, including Firefox for Android 142+ (a second build).
 
-![Breakless skipping an ad](store-assets/screenshot-1-skipping-1280x800.png)
+<p align="center">
+  <a href="media/breakless-demo.mp4"><img src="media/demo-preview.gif" width="720" alt="Breakless demo: an ad break is muted and skipped, and the movie comes straight back"></a>
+</p>
+<p align="center"><b><a href="media/breakless-demo.mp4">▶ Watch the 38-second demo</a></b> (with sound)</p>
 
 ## Install
 
@@ -137,3 +140,15 @@ Breakless collects nothing. See [PRIVACY.md](PRIVACY.md).
 ---
 
 Breakless is an independent project and is not affiliated with, endorsed by or sponsored by Amazon, JioStar or Google. Product names are used only to describe compatibility.
+
+## Demo video
+
+`media/breakless-demo.mp4` (1920×1080, for the store pages and YouTube) and a vertical 1080×1920 cut for Instagram are rendered from `tools/demo`: an animated scene built from Breakless's real popup and on-player card, with synthesised music (no samples, no show footage).
+
+```sh
+node tools/demo/render.js video               # landscape frames -> tools/demo/scenes/
+node tools/demo/render.js video --portrait    # vertical frames  -> tools/demo/scenes_v/
+python3 tools/demo/audio.py tools/demo/mix.wav
+```
+
+Join `scenes/list.txt` with ffmpeg's concat demuxer and add `mix.wav` as the audio track (normalised to -14 LUFS).

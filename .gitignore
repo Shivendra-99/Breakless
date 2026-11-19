@@ -2,3 +2,7 @@ node_modules
 dist/
 test/fixtures/
 test/*.png
+tools/demo/scenes*/
+tools/demo/stills*/
+tools/demo/*.wav
+tools/demo/video*.mp4
