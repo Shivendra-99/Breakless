@@ -120,7 +120,7 @@ bash test/setup-fixtures.sh     # one-time: test video + self-signed cert (needs
 sudo node test/run.js           # needs Chrome; binds port 443; maps all hosts to 127.0.0.1
 ```
 
-`test/run.js` expects Chrome at `/usr/bin/google-chrome`; edit `executablePath` there if yours is elsewhere. Last run: **56/56 passed** (Chrome 153). Includes a player that refuses jumps, a 150 s ad break, a countdown that freezes after the first jump, a two-ad YouTube break, a YouTube break that starts before the ad clip loads, YouTube switched off, and the popup's site-access warning.
+`test/run.js` expects Chrome at `/usr/bin/google-chrome`; edit `executablePath` there if yours is elsewhere. Last run: **57/57 passed** (Chrome 153). Includes a player that refuses jumps, a 150 s ad break, a countdown that freezes after the first jump, a two-ad YouTube break, a YouTube break that starts before the ad clip loads, YouTube switched off, the extension being updated while a video tab stays open, and the popup's site-access warning.
 
 ## Known limits
 

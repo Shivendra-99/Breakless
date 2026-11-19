@@ -414,6 +414,42 @@ const fetchStatus = (page, url) =>
     check('Popup: warns when site access is switched off, with an Allow button', popState.access && /JioHotstar/.test(popState.text) && !/Prime/.test(popState.text), JSON.stringify(popState));
     await pop2.screenshot({ path: path.join(__dirname, 'popup-access.png'), clip: { x: 0, y: 0, width: 320, height: (await pop2.evaluate(() => document.body.scrollHeight)) } });
 
+
+    // ---- Extension updated/reloaded while a YouTube tab stays open -----------
+    // The copy already running in that tab keeps working but loses the browser's extension
+    // APIs. It must still skip ads and must not leave the "Skipping ad" card on screen.
+    const noticeClass = async (pg) => {
+      const cdp = await pg.createCDPSession();
+      const { root } = await cdp.send('DOM.getDocument', { depth: -1, pierce: true });
+      let found = null;
+      const walk = (n) => {
+        if (!n || found) return;
+        const a = n.attributes || [];
+        const i = a.indexOf('role');
+        if (i >= 0 && a[i + 1] === 'status' && a.includes('class')) found = a[a.indexOf('class') + 1];
+        (n.children || []).forEach(walk);
+        (n.shadowRoots || []).forEach(walk);
+      };
+      walk(root);
+      await cdp.detach();
+      return found;
+    };
+    const tab = await browser.newPage();
+    await tab.goto('https://www.youtube.com/watch?v=test', { waitUntil: 'load' });
+    await waitFor(tab, () => T.state().t > 1.5);
+    await sw.evaluate(() => chrome.runtime.reload()).catch(() => {});
+    await sleep(2000);
+    await tab.evaluate(() => T.startAd({ count: 1 }));
+    const mutedInAd = await waitFor(tab, () => T.state().muted, 3000);
+    const midCard = await noticeClass(tab);
+    await waitFor(tab, () => T.ad.done, 8000);
+    await sleep(3500);
+    const orphan = await tab.evaluate(() => ({ done: T.ad.done, seeks: T.ad.seeks, ...T.state() }));
+    const endCard = await noticeClass(tab);
+    check('Extension reloaded while a YouTube tab is open: ad still skipped, sound back, "Skipping ad" card goes away',
+      !!mutedInAd && /show/.test(midCard || '') && orphan.done && orphan.seeks >= 1 && !orphan.muted && endCard != null && !/show/.test(endCard),
+      JSON.stringify({ midCard, endCard, done: orphan.done, seeks: orphan.seeks, muted: orphan.muted }));
+
     console.log('\nExtension console lines seen:', consoleLines.length);
   } catch (e) {
     check('test run completed', false, e.stack);

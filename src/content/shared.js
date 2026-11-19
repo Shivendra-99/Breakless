@@ -58,10 +58,15 @@
   });
 
   function countSkip() {
-    chrome.storage.local
-      .get('skipped')
-      .then(({ skipped = 0 }) => chrome.storage.local.set({ skipped: skipped + 1 }))
-      .catch(() => {});
+    try {
+      chrome.storage.local
+        .get('skipped')
+        .then(({ skipped = 0 }) => chrome.storage.local.set({ skipped: skipped + 1 }))
+        .catch(() => {});
+    } catch (_) {
+      // The extension was updated or reloaded while this tab stayed open: this copy keeps
+      // skipping ads but can no longer reach extension storage. Nothing to count into.
+    }
   }
 
   // ---- DOM helpers ---------------------------------------------------------
@@ -360,9 +365,9 @@
         if (performance.now() - st.lastSeen > endGraceMs) {
           const v = st.video;
           end();
-          countSkip();
-          notice.done(v);
+          notice.done(v); // before anything that touches extension APIs
           log(site, 'ad break ended');
+          countSkip();
         }
       },
       reset() {
