@@ -1,5 +1,5 @@
 // Breakless for Prime Video (page context / MAIN world, document_start).
-// "Remove ads before they load" (beta, off by default): strips ad cue points from the
+// "Remove ads before they load" (on by default): strips ad cue points from the
 // playback JSON and ad Periods from the DASH manifest before Amazon's player reads them.
 // Rules mirror uBlock Origin's Prime Video filters (uAssets filters-2025.txt).
 (() => {
@@ -8,7 +8,7 @@
 
   const CFG_EVENT = '__bl_cfg_e1';
   const HELLO_EVENT = '__bl_hello_e1';
-  const cfg = { primeEnabled: true, primePreload: false };
+  const cfg = { primeEnabled: true, primePreload: true };
   document.addEventListener(CFG_EVENT, (e) => {
     try { Object.assign(cfg, JSON.parse(String(e.detail))); } catch (_) {}
   });

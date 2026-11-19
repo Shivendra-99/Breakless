@@ -20,8 +20,8 @@ function send(res, code, type, body, extra = {}) {
   res.end(body);
 }
 
-function serveVideo(req, res) {
-  const file = path.join(FIX, 'video.webm');
+function serveVideo(req, res, name = 'video.webm') {
+  const file = path.join(FIX, name);
   const size = fs.statSync(file).size;
   const range = req.headers.range;
   if (range) {
@@ -49,6 +49,16 @@ const server = https.createServer(
     log.push(`${host}${req.url}`);
     if (req.method === 'OPTIONS') return send(res, 204, 'text/plain', '', { 'Access-Control-Allow-Headers': '*' });
     if (url.pathname === '/video.webm') return serveVideo(req, res);
+    if (url.pathname === '/ad.webm') return serveVideo(req, res, 'ad.webm');
+    if (url.pathname === '/youtubei/v1/player') {
+      return send(res, 200, 'application/json', JSON.stringify({
+        playabilityStatus: { status: 'OK' }, videoDetails: { videoId: 'next' },
+        adPlacements: [{ a: 1 }], playerAds: [{ b: 1 }], adSlots: [{ c: 1 }], keep: 1,
+      }));
+    }
+    if (/(^|\.)youtube\.com$/.test(host) && (url.pathname === '/' || url.pathname === '/watch')) {
+      return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(PAGES, 'youtube.html')));
+    }
     if (url.pathname === '/manifest.mpd') return send(res, 200, 'application/dash+xml', MPD);
     if (url.pathname.endsWith('/GetPlaybackResources')) return send(res, 200, 'application/json', JSON.stringify({ url: req.url }));
     const isPage = /^(www\.)?(primevideo|hotstar|jiohotstar)\.com$|^www\.amazon\./.test(host) && (url.pathname === '/' || url.pathname.startsWith('/detail') || url.pathname.startsWith('/dp/') || url.pathname.startsWith('/in/'));

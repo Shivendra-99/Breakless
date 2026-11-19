@@ -2,7 +2,10 @@
 (() => {
   if (window.__breakless) return;
 
-  const DEFAULTS = { primeEnabled: true, hotstarEnabled: true, primePreload: false };
+  const DEFAULTS = {
+    primeEnabled: true, hotstarEnabled: true, primePreload: true,
+    youtubeEnabled: false, youtubePreload: false,
+  };
   const CFG_EVENT = '__bl_cfg_e1';
   const HELLO_EVENT = '__bl_hello_e1';
 
@@ -12,20 +15,28 @@
   const log = (...args) => console.debug('[Breakless]', ...args);
 
   // ---- Settings + bridge to the page-context (MAIN world) script ----------
-  function pushConfigToPage() {
-    const cfg = JSON.stringify({
+  function pageConfig() {
+    return {
       primeEnabled: !!settings.primeEnabled,
       hotstarEnabled: !!settings.hotstarEnabled,
       primePreload: !!(settings.primeEnabled && settings.primePreload),
-    });
-    document.dispatchEvent(new CustomEvent(CFG_EVENT, { detail: cfg }));
+      youtubeEnabled: !!settings.youtubeEnabled,
+      youtubePreload: !!(settings.youtubeEnabled && settings.youtubePreload),
+    };
   }
-  document.addEventListener(HELLO_EVENT, pushConfigToPage);
+  function pushConfigToPage() {
+    document.dispatchEvent(new CustomEvent(CFG_EVENT, { detail: JSON.stringify(pageConfig()) }));
+  }
+  // The page-context scripts start with sensible defaults; they only hear from us once the
+  // real settings are loaded, never the placeholders above.
+  let loaded = false;
+  document.addEventListener(HELLO_EVENT, () => { if (loaded) pushConfigToPage(); });
 
   const ready = chrome.storage.local
     .get(Object.keys(DEFAULTS))
     .then((stored) => {
       Object.assign(settings, stored);
+      loaded = true;
       pushConfigToPage();
       listeners.forEach((fn) => fn(settings));
     })
@@ -36,7 +47,7 @@
     let touched = false;
     for (const key of Object.keys(DEFAULTS)) {
       if (key in changes) {
-        settings[key] = changes[key].newValue;
+        settings[key] = changes[key].newValue ?? DEFAULTS[key];
         touched = true;
       }
     }
@@ -236,6 +247,7 @@
     const reseekMs = opts.reseekMs ?? 3000;
     const frozenMs = opts.frozenMs ?? 4500;
     const endGraceMs = opts.endGraceMs ?? 800;
+    const tail = opts.tail ?? 1; // seconds of the ad left to play (muted) after a jump
     const st = {};
 
     function fresh(video) {
@@ -243,8 +255,16 @@
         active: true, video, startedAt: performance.now(), lastSeen: 0,
         rate: video.playbackRate >= 2 ? 1 : video.playbackRate || 1,
         muted: video.muted,
-        firstRemaining: null,
-        seekAt: 0, seekTarget: null, remainingAtSeek: null, seekOk: false, fallback: false, fast: false,
+        fast: false,
+      });
+      newAd(video);
+    }
+
+    // A new ad inside the same break (YouTube plays each ad of a pod as its own video).
+    function newAd(video) {
+      Object.assign(st, {
+        src: video.currentSrc, firstRemaining: null,
+        seekAt: 0, seekTarget: null, remainingAtSeek: null, seekOk: false, fallback: false,
       });
     }
 
@@ -265,7 +285,7 @@
     }
 
     function seek(video, remaining, now) {
-      const jump = Math.min(remaining - 1, maxSeek);
+      const jump = Math.min(remaining - tail, maxSeek);
       try {
         const from = video.currentTime;
         video.currentTime = from + jump;
@@ -289,6 +309,7 @@
           log(site, 'ad break started', remaining != null ? `(${remaining}s left)` : '(no countdown)');
         }
         st.lastSeen = now;
+        if (video.currentSrc !== st.src) newAd(video);
         const live = isLive(video);
         const known = remaining != null && Number.isFinite(remaining);
 
@@ -296,7 +317,7 @@
 
         if (allowSeek && !live && known && !st.fallback) {
           if (st.seekTarget == null) {
-            if (remaining > 2) seek(video, remaining, now);
+            if (remaining > tail + 1) seek(video, remaining, now);
           } else if (!st.seekOk) {
             if (video.currentTime >= st.seekTarget - 2) {
               st.seekOk = true; // the jump landed

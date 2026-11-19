@@ -1,6 +1,6 @@
 # Breakless
 
-A browser extension that skips and removes ads in **movies and shows** on **Prime Video** and **JioHotstar**. The user installs it and it works; there is nothing to set up. Live sports are out of scope: during a live ad break it only mutes.
+A browser extension that skips and removes ads in **movies and shows** on **Prime Video** and **JioHotstar**, and in videos on **YouTube**. Prime Video and JioHotstar work straight after install; YouTube is one click to switch on. Live sports are out of scope: during a live ad break it only mutes.
 
 Works in Chrome, Edge, Brave and Opera (one build), and in Firefox 140+, including Firefox for Android 142+ (a second build).
 
@@ -19,20 +19,23 @@ A Firefox Add-ons version is on the way. Until then, Firefox users can use the z
 
 | Browser | File |
 |---|---|
-| Firefox 140+ | [release/breakless-firefox-v0.2.0.zip](release/breakless-firefox-v0.2.0.zip) |
-| Opera, or testing a local build | [release/breakless-chrome-edge-v0.2.0.zip](release/breakless-chrome-edge-v0.2.0.zip) |
+| Firefox 140+ | [release/breakless-firefox-v0.3.0.zip](release/breakless-firefox-v0.3.0.zip) |
+| Opera, or testing a local build | [release/breakless-chrome-edge-v0.3.0.zip](release/breakless-chrome-edge-v0.3.0.zip) |
 
-**Not working on Edge?** Edge can install extensions with every site switched off. Open `edge://extensions` → Breakless → **Details** → **Site access**, switch on `primevideo.com`, `amazon.in`, `amazonvideo.com`, `aiv-delivery.net`, `hotstar.com` and `jiohotstar.com`, then reload the Prime Video or JioHotstar tab. The popup should say "Working on Prime Video".
+**Turning on YouTube:** click the Breakless icon and switch **YouTube** on, or use the button on the welcome tab that opens after install. The browser asks once whether Breakless may run on youtube.com. Until you say yes, Breakless does nothing on YouTube.
+
+**Not working on Edge?** Edge can install extensions with every site switched off. Since v0.3.0 the Breakless popup notices this and shows an **Allow access** button. To do it by hand: open `edge://extensions` → Breakless → **Details** → **Site access**, switch on `primevideo.com`, `amazon.in`, `amazonvideo.com`, `aiv-delivery.net`, `hotstar.com` and `jiohotstar.com`, then reload the Prime Video or JioHotstar tab. The popup should say "Working on Prime Video".
 
 ## What it does
 
-| Layer | Prime Video | JioHotstar | Default |
+| Layer | Prime Video | JioHotstar | YouTube |
 |---|---|---|---|
-| Blocks ad network calls | `getVideoAds`, `getAds`, Amazon ad-video host | `preroll` / `midroll` calls, `videoads.hotstar.com`, `hesads.akamaized.net`, Google ad requests | On |
-| Skips ads on screen | Reads the ad countdown, jumps past the ad (max 90 s per jump; Amazon's player crashes on bigger jumps), clicks Amazon's Skip button. With no countdown it plays the ad muted at 16x. | Ends separately played ad videos; jumps past ads shown with an "Ad" badge countdown | On |
-| Hides ad slots | – | Ad billboards (`bbtype-video` / `bbtype-image`) | On |
-| Cleans page data | – | Removes the player's `intervention_data` | On |
-| Removes ads before they load (**beta**) | Strips ad Periods from the DASH manifest, ad cue points and pause ads from the playback data, and the ad-insertion request flags. Same rules as uBlock Origin. | – | **Off** |
+| Blocks ad network calls | `getVideoAds`, `getAds`, Amazon ad-video host | `preroll` / `midroll` calls, `videoads.hotstar.com`, `hesads.akamaized.net`, Google ad requests | – (on purpose, see below) |
+| Skips ads on screen | Reads the ad countdown, jumps past the ad (max 90 s per jump; Amazon's player crashes on bigger jumps), clicks Amazon's Skip button. With no countdown it plays the ad muted at 16x. | Ends separately played ad videos; jumps past ads shown with an "Ad" badge countdown | Clicks **Skip** the moment it appears; otherwise mutes the ad and jumps to its end. Each ad of a multi-ad break in turn. |
+| Hides ad slots | – | Ad billboards (`bbtype-video` / `bbtype-image`) | Feed, search, sidebar, masthead and companion ads, in-player overlay ads |
+| Cleans page data | – | Removes the player's `intervention_data` | – |
+| Removes ads before they load | Strips ad Periods from the DASH manifest, ad cue points and pause ads from the playback data, and the ad-insertion request flags. Same rules as uBlock Origin. **On by default** since v0.3.0. | – | **Beta, off by default.** Removes `adPlacements`, `playerAds` and `adSlots` from YouTube's player data, nothing else. |
+| Default | On | On | Off until you switch it on (asks for youtube.com access) |
 
 While an ad is handled, a large highlighted **"Skipping ad"** card appears at the top of the player, with a progress bar. When the ad is gone it turns into a green **"Ad skipped"** for 1.6 s. The card scales with the player, up to 26 px text in full screen.
 
@@ -44,10 +47,16 @@ While an ad is handled, a large highlighted **"Skipping ad"** card appears at th
 
 Sound and speed come back as soon as the ad ends. Product videos on Amazon shopping pages are never touched.
 
+**How YouTube works**
+- YouTube marks the player with `ad-showing` while an ad plays and plays each ad as its own short clip in the same `<video>`. Breakless clicks Skip when YouTube offers it; until then it mutes the clip and jumps to 0.25 s before its end, so YouTube finishes the ad itself and moves on.
+- It only jumps once the player has actually switched to the ad clip. In the first moment of a break the real video can still be on screen: Breakless only mutes it then, so the video you're watching is never jumped.
+- Nothing is blocked on the network. Blocking YouTube's ad requests is what sets off YouTube's "ad blockers are not allowed" wall; skipping in the player doesn't touch those requests.
+- YouTube's site access is an optional permission, and the YouTube scripts are registered only after you allow it. The page-context script (which edits player data) is registered only while the YouTube beta is on, so with it off Breakless never touches YouTube's own JavaScript (`chrome.scripting.registerContentScripts`). Adding YouTube therefore didn't add a new install warning, and existing users weren't asked to re-approve the update.
+
 ## Install it yourself (for testing)
 
 **Chrome / Edge / Brave**
-1. Download and unzip `breakless-chrome-edge-v0.2.0.zip` into a folder.
+1. Download and unzip `breakless-chrome-edge-v0.3.0.zip` into a folder.
 2. Open `chrome://extensions` (on Edge: `edge://extensions`).
 3. Turn on **Developer mode** and click **Load unpacked**.
 4. Select the unzipped folder, then pin the extension from the puzzle-piece menu.
@@ -85,14 +94,17 @@ Everything was tested in Chrome against **mock** pages that copy the ad signals 
 ```
 src/
   manifest.json           MV3 manifest (Chrome build; build.js derives the Firefox one)
-  background.js           turns rule sets on/off from the popup toggles
+  background.js           rule sets on/off, YouTube scripts on/off, welcome tab, 0.2 -> 0.3 migration
   rules/*.json            declarativeNetRequest rules (prime_basic, prime_preload, hotstar_basic)
   content/shared.js       settings, ad controller (jump / mute / 16x / restore), on-player toast
   content/prime.js        Prime ad detection on screen
-  content/prime-main.js   page-context: manifest + playback-data pruning (beta)
+  content/prime-main.js   page-context: manifest + playback-data pruning
   content/hotstar.js      Hotstar ad-video / badge handling, billboard hiding
   content/hotstar-main.js page-context: intervention_data pruning
-  popup/                  toggles + "ad breaks handled" counter
+  content/youtube.js      YouTube skipper (Skip button, mute + jump) and ad-slot hiding
+  content/youtube-main.js page-context: YouTube player-data pruning (beta)
+  popup/                  toggles, "ad breaks handled" counter, site-access warning
+  welcome/                tab shown after install/update: site-access check, turn on YouTube
 build.js                  -> dist/chrome, dist/firefox and both zips
 release/                  ready-to-install zips
 store-assets/             store logo, tiles, screenshots, listing text
@@ -108,13 +120,14 @@ bash test/setup-fixtures.sh     # one-time: test video + self-signed cert (needs
 sudo node test/run.js           # needs Chrome; binds port 443; maps all hosts to 127.0.0.1
 ```
 
-`test/run.js` expects Chrome at `/usr/bin/google-chrome`; edit `executablePath` there if yours is elsewhere. Last run: **34/34 passed** (Chrome 153). Includes a player that refuses jumps, a 150 s ad break, and a countdown that freezes after the first jump.
+`test/run.js` expects Chrome at `/usr/bin/google-chrome`; edit `executablePath` there if yours is elsewhere. Last run: **58/58 passed** (Chrome 153). Includes a player that refuses jumps, a 150 s ad break, a countdown that freezes after the first jump, a two-ad YouTube break, a YouTube break that starts before the ad clip loads, and the popup's site-access warning. The test loads a copy of the build that asks for youtube.com up front, because a headless browser can't click the permission prompt.
 
 ## Known limits
 
 - **Changing selectors.** Amazon A/B-tests the class names, so detection can break after a player update. The text fallback ("Ad 0:20" inside the player) and the 16x fallback reduce this risk but don't remove it.
 - **JioHotstar signals are less certain.** The 2026 web player's ad elements aren't publicly documented. The badge and ad-video signals come from community code; test them on the live site.
-- **Beta mode** can make subtitles drift (seen with uBlock Origin's identical rules). That is why it is off by default.
+- **Removing Prime ads before they load** can make subtitles drift (seen with uBlock Origin's identical rules). It worked well in real use, so it is on by default since v0.3.0; switch it off in the popup if subtitles drift or a title won't play.
+- **YouTube changes often.** If an ad plays through, check the console for `[Breakless] youtube` lines. If YouTube shows an ad-blocker warning with the pre-load beta on, switch the beta off.
 - **Account risk.** Hotstar's terms forbid blocking ads, and one unconfirmed report links an ad blocker to a blocked account. Mention this in your store listing or FAQ.
 
 ## Privacy

@@ -61,7 +61,7 @@ const shots = {
     <div style="position:absolute;left:72px;top:70px;width:470px">
       <div class="brand"><img src="${icon}"><b>Breakless</b></div>
       <h1 style="margin-top:56px">Back to your<br>show in seconds.</h1>
-      <p class="lead" style="margin-top:22px">Sound and speed come back the moment the ad is gone. Works with Prime Video and JioHotstar in your browser.</p>
+      <p class="lead" style="margin-top:22px">Sound and speed come back the moment the ad is gone. Works with Prime Video, JioHotstar and YouTube in your browser.</p>
     </div>
     <div class="player" style="position:absolute;left:600px;top:150px;width:620px;height:500px">
       <div class="hill"></div><div class="bar"><i style="width:41%"></i></div>
@@ -72,7 +72,7 @@ const shots = {
     <div style="position:absolute;left:72px;top:70px;width:520px">
       <div class="brand"><img src="${icon}"><b>Breakless</b></div>
       <h1 style="margin-top:56px">One switch<br>per site.</h1>
-      <p class="lead" style="margin-top:22px">Turn sites on or off, see how many ad breaks were handled, and try the stronger beta mode for Prime Video.</p>
+      <p class="lead" style="margin-top:22px">Turn sites on or off, see how many ad breaks were handled, and switch YouTube on when you want it.</p>
       <p class="lead" style="margin-top:22px;font-size:18px;color:#8e98a6">Settings stay in your browser. Nothing is sent anywhere.</p>
     </div>
     <img src="${popup}" style="position:absolute;left:760px;top:60px;width:340px;border-radius:16px;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.1)">`],
@@ -81,13 +81,13 @@ const shots = {
     <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">
       <img src="${icon}" style="width:96px;height:96px;border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,.35)">
       <div style="font-size:36px;font-weight:800;letter-spacing:.3px">Breakless</div>
-      <div style="font-size:17px;color:#d4f3ec">Movies &amp; shows without ad breaks</div>
+      <div style="font-size:17px;color:#d4f3ec">Movies, shows &amp; videos without ad breaks</div>
     </div>`],
   'large-tile-1400x560.png': [1400, 560, `
     <div style="position:absolute;inset:0;background:linear-gradient(135deg,#0f766e 0%,#0b3a4a 60%,#0b0e13 100%)"></div>
     <div style="position:absolute;left:90px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;gap:18px;width:640px">
       <div class="brand"><img src="${icon}" style="width:72px;height:72px;border-radius:18px"><b style="font-size:40px">Breakless</b></div>
-      <div style="font-size:50px;font-weight:800;line-height:1.1">Movies &amp; shows<br>without ad breaks</div>
+      <div style="font-size:50px;font-weight:800;line-height:1.1">Movies, shows &amp; videos<br>without ad breaks</div>
       <div style="font-size:22px;color:#cfeee7">Skips ads automatically. No setup.</div>
     </div>
     <div class="player" style="position:absolute;right:90px;top:70px;width:520px;height:420px">

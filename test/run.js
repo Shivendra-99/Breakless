@@ -3,7 +3,21 @@ const path = require('path');
 const puppeteer = require('puppeteer-core');
 const server = require('./server');
 
-const EXT = path.resolve(__dirname, '..', 'dist', 'chrome');
+const fs = require('fs');
+
+// Test copy of the Chrome build. YouTube is an optional permission that a real user grants
+// with a click; a headless browser can't click the prompt, so the test copy asks for it up
+// front. Everything else is the shipped build, byte for byte.
+const BUILD = path.resolve(__dirname, '..', 'dist', 'chrome');
+const EXT = path.resolve(__dirname, '..', 'dist', 'chrome-test');
+fs.rmSync(EXT, { recursive: true, force: true });
+fs.cpSync(BUILD, EXT, { recursive: true });
+{
+  const mf = JSON.parse(fs.readFileSync(path.join(EXT, 'manifest.json'), 'utf8'));
+  mf.host_permissions.push(...mf.optional_host_permissions);
+  delete mf.optional_host_permissions;
+  fs.writeFileSync(path.join(EXT, 'manifest.json'), JSON.stringify(mf, null, 2));
+}
 const results = [];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 function check(name, ok, detail = '') {
@@ -52,10 +66,31 @@ const fetchStatus = (page, url) =>
     const sw = await swTarget.worker();
     await sleep(500);
     const enabled = await sw.evaluate(() => chrome.declarativeNetRequest.getEnabledRulesets());
-    check('default rule sets on: prime_basic + hotstar_basic (beta off)',
-      enabled.includes('prime_basic') && enabled.includes('hotstar_basic') && !enabled.includes('prime_preload'),
+    check('default rule sets on: prime_basic + prime_preload + hotstar_basic',
+      enabled.includes('prime_basic') && enabled.includes('hotstar_basic') && enabled.includes('prime_preload'),
       JSON.stringify(enabled));
     const setSettings = (obj) => sw.evaluate((o) => chrome.storage.local.set(o), obj);
+    const stored = await sw.evaluate(() => chrome.storage.local.get(null));
+    check('fresh install stores only the counter (defaults stay in code)',
+      JSON.stringify(stored) === '{"skipped":0}', JSON.stringify(stored));
+    const versions = await sw.evaluate(() => [olderThan('0.2.0', '0.3.0'), olderThan('0.2.9', '0.3.0'), olderThan('0.3.0', '0.3.0'), olderThan('0.3.1', '0.3.0'), olderThan(undefined, '0.3.0')]);
+    check('update from 0.2.x is recognised (turns Prime pre-load removal on for existing users)',
+      JSON.stringify(versions) === '[true,true,false,false,true]', JSON.stringify(versions));
+    const welcome = await browser.waitForTarget((t) => t.url().endsWith('/welcome/welcome.html'), { timeout: 5000 }).catch(() => null);
+    check('welcome tab opens on install', !!welcome);
+    if (welcome) {
+      const wp = await welcome.page();
+      await wp.setViewport({ width: 900, height: 900, deviceScaleFactor: 1 });
+      await sleep(500);
+      const w = await wp.evaluate(() => ({
+        sitesOk: !document.getElementById('sitesOk').hidden,
+        allowHidden: document.getElementById('allowSites').hidden,
+        ytButton: !document.getElementById('ytOn').hidden,
+      }));
+      check('welcome tab: sites already allowed, YouTube offered', w.sitesOk && w.allowHidden && w.ytButton, JSON.stringify(w));
+      await wp.screenshot({ path: path.join(__dirname, 'welcome.png'), fullPage: true });
+      await wp.close();
+    }
 
     const page = await browser.newPage();
     const consoleLines = [];
@@ -137,13 +172,17 @@ const fetchStatus = (page, url) =>
       `${pod.seeks} jump(s), ad gone after ${((Date.now() - wall0) / 1000).toFixed(1)}s, overshoot ${(pod.endedAt - pod.end).toFixed(1)}s, rate now ${pod.rate}`);
     await sleep(1500);
 
-    // ---- Prime: beta OFF -> manifest and JSON untouched ----------------------
+    // ---- Prime: pre-load removal switched OFF -> manifest and JSON untouched --
+    await setSettings({ primePreload: false });
+    await sleep(800);
+    await page.goto('https://www.primevideo.com/detail/test', { waitUntil: 'load' });
+    await sleep(600);
     let mpd = await page.evaluate(() => fetch('/manifest.mpd').then((r) => r.text()));
-    check('Prime (beta off): manifest left untouched', mpd.includes('value="Ad"'));
+    check('Prime (pre-load off): manifest left untouched', mpd.includes('value="Ad"'));
     let gpr = await page.evaluate(() =>
       fetch('https://atv-ps.primevideo.com/cdp/catalog/GetPlaybackResources?deviceAdInsertionTypeOverride=SSAI&desiredResources=PlaybackUrls%2CCuepointPlaylist&x=1')
         .then((r) => r.json()));
-    check('Prime (beta off): playback request untouched', gpr.url.includes('deviceAdInsertionTypeOverride') && gpr.url.includes('CuepointPlaylist'), gpr.url);
+    check('Prime (pre-load off): playback request untouched', gpr.url.includes('deviceAdInsertionTypeOverride') && gpr.url.includes('CuepointPlaylist'), gpr.url);
 
     // ---- Prime: network blocks ----------------------------------------------
     let s1 = await fetchStatus(page, 'https://eu.regolith.prime-video.amazon.dev/getVideoAds?x=1');
@@ -151,11 +190,11 @@ const fetchStatus = (page, url) =>
     check('Prime: ad-decision call getVideoAds is blocked', s1.startsWith('blocked'), s1);
     check('Prime: other calls on the same server still work', s2.startsWith('ok'), s2);
 
-    // ---- Prime: beta ON ----------------------------------------------------
+    // ---- Prime: pre-load removal back ON (the default) ----------------------
     await setSettings({ primePreload: true });
     await sleep(800);
     const enabled2 = await sw.evaluate(() => chrome.declarativeNetRequest.getEnabledRulesets());
-    check('Beta toggle turns on the prime_preload rule set', enabled2.includes('prime_preload'), JSON.stringify(enabled2));
+    check('Pre-load toggle turns the prime_preload rule set back on', enabled2.includes('prime_preload'), JSON.stringify(enabled2));
     await page.goto('https://www.primevideo.com/detail/test', { waitUntil: 'load' });
     await sleep(600);
     mpd = await page.evaluate(() => fetch('/manifest.mpd').then((r) => r.text()));
@@ -164,7 +203,7 @@ const fetchStatus = (page, url) =>
       return { ids, hasDuration: /mediaPresentationDuration=/.test(txt), hasStart: /<Period[^>]*\sstart=/.test(txt) };
     };
     let info = mpdInfo(mpd);
-    check('Prime (beta, fetch): ad + /interstitial/ periods removed, content kept',
+    check('Prime (pre-load, fetch): ad + /interstitial/ periods removed, content kept',
       JSON.stringify(info.ids) === '["content-1","content-2"]' && !info.hasDuration && !info.hasStart, JSON.stringify(info));
     const mpdXhr = await page.evaluate(() => new Promise((res) => {
       const x = new XMLHttpRequest();
@@ -173,7 +212,7 @@ const fetchStatus = (page, url) =>
       x.send();
     }));
     info = mpdInfo(mpdXhr);
-    check('Prime (beta, XHR): ad periods removed', JSON.stringify(info.ids) === '["content-1","content-2"]', JSON.stringify(info));
+    check('Prime (pre-load, XHR): ad periods removed', JSON.stringify(info.ids) === '["content-1","content-2"]', JSON.stringify(info));
     const pruned = await page.evaluate(() => JSON.parse(JSON.stringify({
       cuepointPlaylist: { a: 1 },
       vodPlaybackUrls: { result: { playbackUrls: { cuepoints: [1, 2], urlSets: { x: 1 } } } },
@@ -185,7 +224,7 @@ const fetchStatus = (page, url) =>
       keep: true,
     })));
     const pu = pruned.vodPlaylistedPlaybackUrls.result.playbackUrls;
-    check('Prime (beta): ad cue points, pause ads and ad playlist items removed from playback data',
+    check('Prime (pre-load): ad cue points, pause ads and ad playlist items removed from playback data',
       !('cuepointPlaylist' in pruned) && !('cuepoints' in pruned.vodPlaybackUrls.result.playbackUrls) &&
       !('pauseBehavior' in pu) && !('pauseAdsResolution' in pu) && pu.intraTitlePlaylist.length === 1 &&
       pu.intraTitlePlaylist[0].type === 'MAIN' && !('ads' in pruned) && pruned.keep === true &&
@@ -197,11 +236,10 @@ const fetchStatus = (page, url) =>
       x.onload = () => res(JSON.parse(x.responseText));
       x.send();
     }));
-    check('Prime (beta): playback request asks for no ad insertion and no cue points',
+    check('Prime (pre-load): playback request asks for no ad insertion and no cue points',
       !gpr.url.includes('deviceAdInsertionTypeOverride') && !gpr.url.includes('CuepointPlaylist') && gpr.url.includes('x=1'), gpr.url);
     const adbFlag = await page.evaluate(() => window.ue_adb_chk);
     check('Prime: ad-block check flag neutralised', adbFlag === 1, String(adbFlag));
-    await setSettings({ primePreload: false });
 
     // ---- Amazon shopping page: must not touch product videos ----------------
     await page.goto('https://www.amazon.in/dp/B000TEST', { waitUntil: 'load' });
@@ -255,14 +293,144 @@ const fetchStatus = (page, url) =>
     check('Hotstar switched off: nothing blocked or hidden', off.preroll.startsWith('ok') && !off.billboard, JSON.stringify(off));
     await setSettings({ hotstarEnabled: true });
 
+
+    // ---- YouTube: nothing runs until the user switches it on -----------------
+    const ytScripts = () => sw.evaluate(() => chrome.scripting.getRegisteredContentScripts().then((l) => l.map((x) => `${x.id}:${x.world || 'ISOLATED'}`)));
+    check('YouTube: off by default, no scripts registered', (await ytScripts()).length === 0, JSON.stringify(await ytScripts()));
+    await page.goto('https://www.youtube.com/watch?v=test', { waitUntil: 'load' });
+    await sleep(1000);
+    let yt = await page.evaluate(() => ({ adSlot: T.shown('adItem'), masthead: T.shown('masthead-ad'), data: 'adPlacements' in ytInitialPlayerResponse }));
+    check('YouTube off: page left alone (ad slots and player data untouched)', yt.adSlot && yt.masthead && yt.data, JSON.stringify(yt));
+
+    await setSettings({ youtubeEnabled: true });
+    await sleep(1000);
+    const regd = await ytScripts();
+    check('YouTube switched on: skipper registered, YouTube\'s own JavaScript left alone (beta off)',
+      JSON.stringify(regd) === '["bl-yt:ISOLATED"]', JSON.stringify(regd));
+    await page.goto('https://www.youtube.com/watch?v=test', { waitUntil: 'load' });
+    await waitFor(page, () => T.state().t > 1.5);
+    yt = await page.evaluate(() => ({
+      adItem: T.shown('adItem'), masthead: T.shown('masthead-ad'), playerAds: T.shown('player-ads'), normal: T.shown('normalItem'),
+    }));
+    check('YouTube: feed, masthead and companion ad slots hidden, normal videos kept',
+      !yt.adItem && !yt.masthead && !yt.playerAds && yt.normal, JSON.stringify(yt));
+    yt = await page.evaluate(() => ({ data: 'adPlacements' in ytInitialPlayerResponse }));
+    check('YouTube (pre-load beta off): player data untouched', yt.data);
+
+    // One ad, no countdown on screen: jump to the end of the ad clip.
+    await sleep(1000);
+    let wall = Date.now();
+    let yad = await page.evaluate(() => T.startAd());
+    const ytMuted = await waitFor(page, () => T.state().ad && T.state().muted, 2000);
+    check('YouTube: ad muted', !!ytMuted);
+    await waitFor(page, () => T.ad.done, 8000);
+    let ytDone = await page.evaluate(() => ({ ...T.ad }));
+    check('YouTube: 30s ad skipped in seconds by jumping to its end',
+      ytDone.done && ytDone.seeks >= 1 && Date.now() - wall < 5000, `gone after ${((Date.now() - wall) / 1000).toFixed(1)}s, ${ytDone.seeks} jump(s)`);
+    await sleep(1500);
+    let ytAfter = await page.evaluate(() => T.state());
+    check('YouTube: video resumes where it left off, sound and speed back',
+      !ytAfter.muted && ytAfter.rate === 1 && !ytAfter.ad && /video\.webm$/.test(ytAfter.src) && Math.abs(ytAfter.t - yad.resumeAt) < 4,
+      `resume ${yad.resumeAt.toFixed(1)}s, now ${ytAfter.t.toFixed(1)}s, muted ${ytAfter.muted}, rate ${ytAfter.rate}`);
+
+    // Two ads back to back, with YouTube's countdown on screen.
+    wall = Date.now();
+    yad = await page.evaluate(() => T.startAd({ count: 2, countdown: true }));
+    await waitFor(page, () => T.ad.done, 12000);
+    ytDone = await page.evaluate(() => ({ ...T.ad }));
+    check('YouTube: two-ad break, both ads skipped', ytDone.done && ytDone.played === 2 && Date.now() - wall < 8000,
+      `${ytDone.played} ads, gone after ${((Date.now() - wall) / 1000).toFixed(1)}s`);
+    await sleep(1500);
+
+    // Player refuses the jump: Skip button is clicked once it appears.
+    yad = await page.evaluate(() => T.startAd({ skipButton: true, blockSeek: true }));
+    const ytSkip = await waitFor(page, () => T.skipClicked, 5000);
+    check('YouTube: clicks Skip as soon as it appears', !!ytSkip);
+    await waitFor(page, () => T.ad.done, 5000);
+    await sleep(1500);
+    ytAfter = await page.evaluate(() => T.state());
+    check('YouTube: after Skip, sound and speed back', !ytAfter.muted && ytAfter.rate === 1, JSON.stringify(ytAfter));
+
+    // The break starts a moment before the ad clip loads: the real video must not be jumped.
+    const before = await page.evaluate(() => T.state().t);
+    yad = await page.evaluate(() => T.startAd({ delaySrc: 1200 }));
+    await sleep(700);
+    const settle = await page.evaluate(() => T.state());
+    check('YouTube: while the ad is still loading, the video is muted but never jumped or sped up',
+      settle.muted && settle.rate === 1 && /video\.webm$/.test(settle.src) && settle.t < before + 2.5,
+      `t ${before.toFixed(1)} -> ${settle.t.toFixed(1)}, rate ${settle.rate}, muted ${settle.muted}`);
+    await waitFor(page, () => T.ad.done, 8000);
+    await sleep(1500);
+    ytAfter = await page.evaluate(() => T.state());
+    check('YouTube: then the ad is skipped and the video continues from the same spot',
+      !ytAfter.muted && ytAfter.rate === 1 && Math.abs(ytAfter.t - yad.resumeAt) < 4,
+      `resume ${yad.resumeAt.toFixed(1)}s, now ${ytAfter.t.toFixed(1)}s`);
+
+    // Pre-load removal (beta).
+    await setSettings({ youtubePreload: true });
+    await sleep(800);
+    const regBeta = await ytScripts();
+    check('YouTube beta on: page-context script registered too', regBeta.includes('bl-yt-main:MAIN') && regBeta.includes('bl-yt:ISOLATED'), JSON.stringify(regBeta));
+    await page.goto('https://www.youtube.com/watch?v=test', { waitUntil: 'load' });
+    await sleep(800);
+    const ytData = await page.evaluate(async () => {
+      const p = ytInitialPlayerResponse;
+      const next = await fetch('/youtubei/v1/player').then((r) => r.json());
+      const other = JSON.parse('{"adPlacements":1,"foo":2}');
+      return {
+        initial: ['adPlacements', 'playerAds', 'adSlots'].filter((k) => k in p), kept: !!p.videoDetails && !!p.streamingData,
+        next: ['adPlacements', 'playerAds', 'adSlots'].filter((k) => k in next), nextKept: next.keep === 1,
+        other: 'adPlacements' in other,
+      };
+    });
+    check('YouTube (pre-load beta): ad schedule removed from page and fetched player data, rest kept',
+      ytData.initial.length === 0 && ytData.kept && ytData.next.length === 0 && ytData.nextKept, JSON.stringify(ytData));
+    check('YouTube (pre-load beta): non-player data never touched', ytData.other, JSON.stringify(ytData));
+    await setSettings({ youtubePreload: false });
+    await sleep(800);
+    check('YouTube beta off again: page-context script removed', JSON.stringify(await ytScripts()) === '["bl-yt:ISOLATED"]', JSON.stringify(await ytScripts()));
+
+    // Switching YouTube off removes everything.
+    await setSettings({ youtubeEnabled: false });
+    await sleep(1000);
+    const unreg = await ytScripts();
+    await page.goto('https://www.youtube.com/watch?v=test', { waitUntil: 'load' });
+    await sleep(800);
+    yt = await page.evaluate(() => ({ adSlot: T.shown('adItem') }));
+    check('YouTube switched off: scripts removed, page back to normal', unreg.length === 0 && yt.adSlot, JSON.stringify({ unreg, ...yt }));
+    await setSettings({ youtubeEnabled: true });
+    await sleep(600);
+
     // ---- Popup ----------------------------------------------------------------
     const pop = await browser.newPage();
     await pop.setViewport({ width: 320, height: 420, deviceScaleFactor: 2 });
     await pop.goto(`chrome-extension://${extId}/popup/popup.html`, { waitUntil: 'load' });
     await sleep(400);
     const shown = await pop.evaluate(() => document.getElementById('skipped').textContent);
-    check('Popup shows ad breaks handled counter', Number(shown) >= 4, `counter = ${shown}`);
+    check('Popup shows ad breaks handled counter', Number(shown) >= 8, `counter = ${shown}`);
+    let popState = await pop.evaluate(() => ({
+      access: !document.getElementById('access').hidden,
+      yt: document.getElementById('youtubeEnabled').checked,
+      preload: document.getElementById('primePreload').checked,
+      beta: [...document.querySelectorAll('.beta')].map((b) => b.closest('.row').querySelector('input').id),
+    }));
+    check('Popup: Prime pre-load on and out of Beta, YouTube toggle on, no access warning',
+      !popState.access && popState.yt && popState.preload && JSON.stringify(popState.beta) === '["youtubePreload"]', JSON.stringify(popState));
     await pop.screenshot({ path: path.join(__dirname, 'popup.png'), clip: { x: 0, y: 0, width: 320, height: (await pop.evaluate(() => document.body.scrollHeight)) } });
+
+    // Site access withheld (what Edge did). Chrome won't let a test switch required access off,
+    // so the popup is shown the answer the browser gives in that case: JioHotstar not allowed.
+    const pop2 = await browser.newPage();
+    await pop2.setViewport({ width: 320, height: 420, deviceScaleFactor: 2 });
+    await pop2.evaluateOnNewDocument(() => {
+      const real = chrome.permissions.contains.bind(chrome.permissions);
+      chrome.permissions.contains = (p) => (p.origins || []).some((o) => /hotstar/.test(o)) ? Promise.resolve(false) : real(p);
+    });
+    await pop2.goto(`chrome-extension://${extId}/popup/popup.html`, { waitUntil: 'load' });
+    await sleep(400);
+    popState = await pop2.evaluate(() => ({ access: !document.getElementById('access').hidden, text: document.getElementById('accessText').textContent }));
+    check('Popup: warns when site access is switched off, with an Allow button', popState.access && /JioHotstar/.test(popState.text) && !/Prime/.test(popState.text), JSON.stringify(popState));
+    await pop2.screenshot({ path: path.join(__dirname, 'popup-access.png'), clip: { x: 0, y: 0, width: 320, height: (await pop2.evaluate(() => document.body.scrollHeight)) } });
 
     console.log('\nExtension console lines seen:', consoleLines.length);
   } catch (e) {

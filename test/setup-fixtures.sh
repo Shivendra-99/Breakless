@@ -5,8 +5,11 @@ cd "$(dirname "$0")"
 mkdir -p fixtures
 ffmpeg -loglevel error -y -f lavfi -i testsrc=size=320x180:rate=10 -t 300 \
   -c:v libvpx-vp9 -b:v 40k -deadline realtime -cpu-used 8 -g 10 fixtures/video.webm
+# A separate 30 s clip that the mock YouTube player plays as an ad.
+ffmpeg -loglevel error -y -f lavfi -i "color=c=orange:size=320x180:rate=10" -t 30 \
+  -c:v libvpx-vp9 -b:v 20k -deadline realtime -cpu-used 8 -g 10 fixtures/ad.webm
 openssl req -x509 -newkey rsa:2048 -nodes -keyout fixtures/key.pem -out fixtures/cert.pem -days 30 \
   -subj "/CN=test" \
-  -addext "subjectAltName=DNS:*.primevideo.com,DNS:primevideo.com,DNS:*.hotstar.com,DNS:*.jiohotstar.com,DNS:*.amazon.in,DNS:*.prime-video.amazon.dev,DNS:*.regolith.prime-video.amazon.dev" \
+  -addext "subjectAltName=DNS:*.primevideo.com,DNS:primevideo.com,DNS:*.hotstar.com,DNS:*.jiohotstar.com,DNS:*.amazon.in,DNS:*.prime-video.amazon.dev,DNS:*.regolith.prime-video.amazon.dev,DNS:*.youtube.com,DNS:youtube.com" \
   2>/dev/null
 echo "fixtures ready"

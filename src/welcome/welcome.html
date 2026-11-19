@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Breakless is ready</title>
+  <link rel="icon" href="../icons/icon32.png" />
+  <link rel="stylesheet" href="welcome.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="hero">
+      <img src="../icons/icon128.png" alt="" width="64" height="64" />
+      <div>
+        <h1 id="title">Breakless is installed</h1>
+        <p class="lead" id="lead">Movies, shows and videos without ad breaks. Two quick checks and you're set.</p>
+      </div>
+    </header>
+
+    <section class="card" id="sitesCard">
+      <div class="head">
+        <span class="step">1</span>
+        <div>
+          <h2>Let Breakless run on your streaming sites</h2>
+          <p>Some browsers, Microsoft Edge among them, install extensions with site access switched off. Breakless can't skip ads on a site it isn't allowed on.</p>
+        </div>
+      </div>
+      <ul class="checks">
+        <li data-svc="prime"><span class="mark"></span>Prime Video</li>
+        <li data-svc="hotstar"><span class="mark"></span>JioHotstar</li>
+      </ul>
+      <button type="button" class="btn" id="allowSites" hidden>Allow access</button>
+      <p class="ok" id="sitesOk" hidden>All set. Breakless can work on Prime Video and JioHotstar.</p>
+    </section>
+
+    <section class="card" id="ytCard">
+      <div class="head">
+        <span class="step">2</span>
+        <div>
+          <h2>YouTube <em class="new">New</em></h2>
+          <p>Skips YouTube video ads (clicks Skip the moment it's allowed, or mutes the ad and jumps to its end) and hides ads in the feed, sidebar and search. It's optional: Breakless only runs on YouTube after you switch it on here.</p>
+        </div>
+      </div>
+      <button type="button" class="btn" id="ytOn">Turn on YouTube</button>
+      <p class="ok" id="ytOk" hidden>YouTube is on. Reload any YouTube tab that's already open.</p>
+    </section>
+
+    <section class="card plain">
+      <h2>Good to know</h2>
+      <ul class="notes">
+        <li><b>Pin it:</b> click the puzzle-piece icon next to the address bar and pin Breakless to see what it's doing.</li>
+        <li><b>Prime Video</b> ads are now removed before they load, on by default. If subtitles drift or a title won't play, switch "Remove Prime ads before they load" off in the Breakless menu.</li>
+        <li><b>Live sports</b> ads can't be skipped: Breakless mutes them until the match is back.</li>
+      </ul>
+    </section>
+
+    <footer class="foot">
+      Breakless is free and open source ·
+      <a href="https://github.com/Shivendra-99/Breakless" target="_blank" rel="noopener">GitHub</a>
+    </footer>
+  </main>
+  <script src="welcome.js"></script>
+</body>
+</html>

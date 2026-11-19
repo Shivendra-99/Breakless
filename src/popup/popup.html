@@ -11,13 +11,18 @@
     <img src="../icons/icon48.png" alt="" class="logo" width="28" height="28" />
     <div class="brand">
       <h1>Breakless</h1>
-      <p class="tag">Movies &amp; shows without ad breaks</p>
+      <p class="tag">Movies, shows &amp; videos without ad breaks</p>
     </div>
   </header>
 
   <section class="status" id="status" data-state="idle">
     <span class="dot" aria-hidden="true"></span>
-    <span id="statusText">Open Prime Video or JioHotstar</span>
+    <span id="statusText">Open Prime Video, JioHotstar or YouTube</span>
+  </section>
+
+  <section class="access" id="access" hidden>
+    <p id="accessText">Breakless isn't allowed on these sites yet, so it can't skip their ads.</p>
+    <button type="button" class="btn" id="allow">Allow access</button>
   </section>
 
   <section class="stat">
@@ -33,6 +38,13 @@
       </span>
       <input type="checkbox" class="sw" id="primeEnabled" />
     </label>
+    <label class="row sub-row">
+      <span class="txt">
+        <span class="name">Remove Prime ads before they load</span>
+        <span class="sub">If subtitles drift or a video won't play, turn this off.</span>
+      </span>
+      <input type="checkbox" class="sw" id="primePreload" />
+    </label>
     <label class="row">
       <span class="txt">
         <span class="name">JioHotstar</span>
@@ -40,12 +52,19 @@
       </span>
       <input type="checkbox" class="sw" id="hotstarEnabled" />
     </label>
-    <label class="row adv">
+    <label class="row">
       <span class="txt">
-        <span class="name">Remove Prime ads before they load <em class="beta">Beta</em></span>
-        <span class="sub">Stronger. If subtitles drift or a video won't play, turn this off.</span>
+        <span class="name">YouTube <em class="new">New</em></span>
+        <span class="sub" id="youtubeSub">Skip video ads, hide ad slots</span>
       </span>
-      <input type="checkbox" class="sw" id="primePreload" />
+      <input type="checkbox" class="sw" id="youtubeEnabled" />
+    </label>
+    <label class="row sub-row">
+      <span class="txt">
+        <span class="name">Remove YouTube ads before they load <em class="beta">Beta</em></span>
+        <span class="sub">If a video won't play, turn this off.</span>
+      </span>
+      <input type="checkbox" class="sw" id="youtubePreload" />
     </label>
   </section>
 
