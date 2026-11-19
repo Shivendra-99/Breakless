@@ -8,14 +8,21 @@ Works in Chrome, Edge, Brave and Opera (one build), and in Firefox 140+, includi
 
 ## Install
 
-**Microsoft Edge:** one click from the store: **[Get Breakless on Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/aokengnfpamoadclgmgcfjpodmcdcmkd)**
+One click from the store:
 
-Chrome Web Store and Firefox Add-ons versions are on the way. Until then, use the zip for your browser and follow the steps under "Install it yourself" below.
+| Browser | Install |
+|---|---|
+| **Chrome, Brave** | **[Get Breakless on the Chrome Web Store](https://chromewebstore.google.com/detail/breakless/nnhpdkaghaokhcaaddjkplkefjdifdjg)** |
+| **Microsoft Edge** | **[Get Breakless on Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/aokengnfpamoadclgmgcfjpodmcdcmkd)** |
+
+A Firefox Add-ons version is on the way. Until then, Firefox users can use the zip and follow the steps under "Install it yourself" below.
 
 | Browser | File |
 |---|---|
-| Chrome, Brave, Opera | [release/breakless-chrome-edge-v0.2.0.zip](release/breakless-chrome-edge-v0.2.0.zip) |
 | Firefox 140+ | [release/breakless-firefox-v0.2.0.zip](release/breakless-firefox-v0.2.0.zip) |
+| Opera, or testing a local build | [release/breakless-chrome-edge-v0.2.0.zip](release/breakless-chrome-edge-v0.2.0.zip) |
+
+**Not working on Edge?** Edge can install extensions with every site switched off. Open `edge://extensions` → Breakless → **Details** → **Site access**, switch on `primevideo.com`, `amazon.in`, `amazonvideo.com`, `aiv-delivery.net`, `hotstar.com` and `jiohotstar.com`, then reload the Prime Video or JioHotstar tab. The popup should say "Working on Prime Video".
 
 ## What it does
 
@@ -56,7 +63,7 @@ They can only install it with one click from a store:
 
 | Store | Cost | Notes |
 |---|---|---|
-| Chrome Web Store | One-time US$5 developer fee | Covers Chrome and Brave users. Review usually takes a few days. |
+| Chrome Web Store | One-time US$5 developer fee | **Live:** [Breakless on the Chrome Web Store](https://chromewebstore.google.com/detail/breakless/nnhpdkaghaokhcaaddjkplkefjdifdjg). Covers Chrome and Brave users. |
 | Microsoft Edge Add-ons | Free | **Live:** [Breakless on Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/aokengnfpamoadclgmgcfjpodmcdcmkd) |
 | Firefox Add-ons (AMO) | Free | Upload the Firefox zip. Also reaches Firefox for Android. |
 
